@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-A minimal HTTP echo server in Go (no external dependencies). It logs every incoming request (method, URI, headers, body) to stdout and echoes the same information back to the client as plain text.
+A minimal HTTP blackhole server in Go (no external dependencies). It logs every incoming request (method, URI, headers, body) to stdout and responds with an empty 200 OK (swallowing all input like a blackhole).
 
 ## Commands
 
 - **Run:** `go run main.go` (listens on `:8080` by default, override with `PORT` env var)
-- **Build:** `go build -o echo-server .`
+- **Build:** `go build -o blackhole-server .`
 
 ## Architecture
 
@@ -17,7 +17,7 @@ Single-file server (`main.go`) using only the Go standard library. One catch-all
 
 ## Public Access (cloudflared)
 
-To expose the echo server publicly via a Cloudflare quick tunnel:
+To expose the blackhole server publicly via a Cloudflare quick tunnel:
 
 1. Start the server: `go run main.go &`
 2. Start the tunnel: `cloudflared tunnel --url http://localhost:8080`
