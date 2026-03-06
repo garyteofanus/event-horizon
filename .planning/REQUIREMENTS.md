@@ -1,11 +1,11 @@
-# Requirements: Echo Server
+# Requirements: Blackhole Server
 
 **Defined:** 2026-03-06
 **Core Value:** Every request that hits the server is reliably captured and logged in structured JSON format
 
-## v1 Requirements
+## v1.0 Requirements (Complete)
 
-Requirements for initial release. Each maps to roadmap phases.
+All v1.0 requirements shipped and validated.
 
 ### Logging
 
@@ -33,6 +33,34 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **QA-01**: Zero external dependencies — stdlib only
 - [x] **QA-02**: Use `slog.LogAttrs` with typed `slog.Attr` constructors (no raw key-value pairs)
 
+## v1.1 Requirements
+
+Requirements for TUI Log Viewer milestone. Each maps to roadmap phases.
+
+### TUI Core
+
+- [ ] **TUI-01**: Server launches a bubbletea v2 TUI on the main goroutine, HTTP server runs in background
+- [ ] **TUI-02**: HTTP handler sends request data to TUI via buffered channel (thread-safe bridge)
+- [ ] **TUI-03**: JSON structured logging writes to file only; TUI owns stdout with human-readable format
+
+### Display
+
+- [ ] **DISP-01**: Each request displays as a compact one-line row: timestamp, method, path, status code
+- [ ] **DISP-02**: HTTP methods are color-coded (GET=green, POST=blue, DELETE=red, PUT=yellow, PATCH=cyan)
+- [ ] **DISP-03**: Status codes are color-coded (2xx=green, 4xx=yellow, 5xx=red)
+- [ ] **DISP-04**: Visual separation between log entries (borders, spacing, or alternating styles)
+
+### Interaction
+
+- [ ] **INTR-01**: User can navigate entries with j/k or arrow keys
+- [ ] **INTR-02**: User can expand/collapse individual entries to see full detail (headers, body, client IP, response time)
+- [ ] **INTR-03**: User can clear all visible log entries with a keybind
+- [ ] **INTR-04**: Help footer displays available keybindings
+
+### Robustness
+
+- [ ] **ROBU-01**: TUI adapts to terminal resize events
+
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -49,6 +77,21 @@ Deferred to future release. Tracked but not in current roadmap.
 - **SAFE-01**: Body size limit via `http.MaxBytesReader` (configurable, default 1MB)
 - **SAFE-02**: Sensitive header redaction (Authorization, Cookie)
 
+### Filtering
+
+- **FILT-01**: User can filter requests by method, path, or status code
+- **FILT-02**: User can search through request history
+
+### Robustness (deferred)
+
+- **ROBU-02**: Bounded memory with max entry cap to prevent unbounded growth
+- **ROBU-03**: Graceful shutdown with context cancellation
+- **ROBU-04**: Panic recovery to restore terminal on crash
+
+### Compatibility
+
+- **COMP-01**: `--no-tui` flag to restore v1.0 stdout JSON behavior for CI/piping
+
 ## Out of Scope
 
 | Feature | Reason |
@@ -57,9 +100,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | Route-based behavior | All paths handled identically — this is a logger, not a mock |
 | Authentication | Dev/debugging tool — run behind proxy if auth needed |
 | TLS/HTTPS | Use a reverse proxy for TLS termination |
-| Web UI / dashboard | Logs are the interface — use `jq` or log viewers |
-| Response customization | Fixed 200 OK — use httpbin/WireMock for mocking |
-| External dependencies | Stdlib-only constraint is a feature, not a limitation |
+| Mouse support | Keyboard-first TUI; adds complexity without value |
+| Split-pane layout | Inline expand is simpler and sufficient |
+| Configurable themes | Keep it simple; hardcoded Charm colors |
+| WebSocket streaming | HTTP-only tool |
+| Request replay/export | Log file serves this purpose |
 
 ## Traceability
 
@@ -79,12 +124,25 @@ Deferred to future release. Tracked but not in current roadmap.
 | SRV-03 | Phase 1 | Complete |
 | QA-01 | Phase 1 | Complete |
 | QA-02 | Phase 1 | Complete |
+| TUI-01 | — | Pending |
+| TUI-02 | — | Pending |
+| TUI-03 | — | Pending |
+| DISP-01 | — | Pending |
+| DISP-02 | — | Pending |
+| DISP-03 | — | Pending |
+| DISP-04 | — | Pending |
+| INTR-01 | — | Pending |
+| INTR-02 | — | Pending |
+| INTR-03 | — | Pending |
+| INTR-04 | — | Pending |
+| ROBU-01 | — | Pending |
 
 **Coverage:**
-- v1 requirements: 14 total
-- Mapped to phases: 14
-- Unmapped: 0
+- v1.0 requirements: 14 total (all complete)
+- v1.1 requirements: 12 total
+- Mapped to phases: 0
+- Unmapped: 12
 
 ---
 *Requirements defined: 2026-03-06*
-*Last updated: 2026-03-06 after 01-01 plan completion*
+*Last updated: 2026-03-06 after v1.1 milestone definition*
