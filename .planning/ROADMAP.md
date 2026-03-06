@@ -25,8 +25,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Milestone Goal:** Replace raw stdout JSON with a live terminal UI for inspecting requests in real time.
 
-- [ ] **Phase 3: TUI Scaffolding and HTTP Bridge** - Wire up bubbletea v2 TUI with channel-based request streaming from HTTP server
-- [ ] **Phase 4: Compact List with Styles** - Color-coded one-line-per-request display with visual separation
+- [x] **Phase 3: TUI Scaffolding and HTTP Bridge** - Wire up bubbletea v2 TUI with channel-based request streaming from HTTP server
+- [x] **Phase 4: Compact List with Styles** - Color-coded one-line-per-request display with visual separation
 - [ ] **Phase 5: Interactive Features and Polish** - Navigate, expand/collapse, clear logs, help footer, resize handling
 
 ## Phase Details
@@ -75,8 +75,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Channel bridge, RequestData type, handler adaptation, file-only logging
-- [ ] 03-02-PLAN.md — Bubbletea v2 TUI model, main orchestration, end-to-end verification
+- [x] 03-01-PLAN.md — Channel bridge, RequestData type, handler adaptation, file-only logging
+- [x] 03-02-PLAN.md — Bubbletea v2 TUI model, main orchestration, end-to-end verification
 
 ### Phase 4: Compact List with Styles
 **Goal**: Each request renders as a scannable, color-coded one-line row with clear visual separation between entries
@@ -87,7 +87,10 @@ Plans:
   2. HTTP methods are visually distinct by color (GET=green, POST=blue, DELETE=red, PUT=yellow, PATCH=cyan)
   3. Status codes are visually distinct by color range (2xx=green, 4xx=yellow, 5xx=red)
   4. Adjacent log entries have visible separation (borders, spacing, or alternating styles) so the user can distinguish individual requests at a glance
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 04-01-PLAN.md — Styled compact request rows with Lip Gloss and render verification
 
 ### Phase 5: Interactive Features and Polish
 **Goal**: Users can navigate the request list, inspect individual request details on demand, manage visible entries, and see available keybindings -- all adapting to terminal size changes
@@ -110,6 +113,6 @@ Phases execute in numeric order: 3 -> 4 -> 5
 |-------|-----------|----------------|--------|-----------|
 | 1. Structured Logging Core | v1.0 | 1/1 | Complete | 2026-03-06 |
 | 2. Dual Output | v1.0 | 1/1 | Complete | 2026-03-06 |
-| 3. TUI Scaffolding and HTTP Bridge | v1.1 | 0/2 | Not started | - |
-| 4. Compact List with Styles | v1.1 | 0/? | Not started | - |
+| 3. TUI Scaffolding and HTTP Bridge | v1.1 | 2/2 | Complete | 2026-03-06 |
+| 4. Compact List with Styles | v1.1 | 1/1 | Complete | 2026-03-06 |
 | 5. Interactive Features and Polish | v1.1 | 0/? | Not started | - |

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: TUI Log Viewer
-status: executing
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-06T13:56:44Z"
-last_activity: 2026-03-06 — Completed Plan 03-01 (HTTP bridge + file-only logging)
+status: planning
+stopped_at: Completed Phase 4
+last_updated: "2026-03-06T15:39:00Z"
+last_activity: 2026-03-06 — Completed Phase 4 (Compact List with Styles)
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 3
-  percent: 17
+  completed_phases: 4
+  total_plans: 5
+  completed_plans: 5
+  percent: 67
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-06)
 
 **Core value:** Every request that hits the server is reliably captured and logged in structured JSON format
-**Current focus:** Phase 3 - TUI Scaffolding and HTTP Bridge
+**Current focus:** Phase 5 - Interactive Features and Polish
 
 ## Current Position
 
-Phase: 3 of 5 (TUI Scaffolding and HTTP Bridge) — first phase of v1.1
-Plan: 1 of 2 complete
-Status: Executing (Plan 02 next)
-Last activity: 2026-03-06 — Completed Plan 03-01 (HTTP bridge + file-only logging)
+Phase: 5 of 5 (Interactive Features and Polish) — next phase in v1.1
+Plan: 0 planned
+Status: Ready to plan
+Last activity: 2026-03-06 — Completed Phase 4 (Compact List with Styles)
 
-Progress: [###░░░░░░░░░░░░░░░░░] 17% of v1.1 (1/6 plans)
+Progress: [#############░░░░░░░] 67% of v1.1 (2/3 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3 (2 v1.0 + 1 v1.1)
+- Total plans completed: 5 (2 v1.0 + 3 v1.1)
 - Average duration: 2 min
 - Total execution time: 5 min
 
@@ -45,10 +45,11 @@ Progress: [###░░░░░░░░░░░░░░░░░] 17% of v1.1 (
 |-------|-------|-------|----------|
 | 01-structured-logging-core | 1 | 1 min | 1 min |
 | 02-dual-output | 1 | 1 min | 1 min |
-| 03-tui-scaffolding-and-http-bridge | 1 | 3 min | 3 min |
+| 03-tui-scaffolding-and-http-bridge | 2 | 7 min | 3.5 min |
+| 04-compact-list-with-styles | 1 | 19 min | 19 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (1 min), 02-01 (1 min), 03-01 (3 min)
+- Last 5 plans: 01-01 (1 min), 02-01 (1 min), 03-01 (3 min), 03-02 (4 min), 04-01 (19 min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -68,6 +69,12 @@ Recent decisions affecting current work:
 - [03-01]: Moved handleRequest to handler.go, keeping main.go as orchestration-only
 - [03-01]: Removed TestQA01NoDeps since bubbletea dependency arrives in Plan 02
 - [03-01]: Kept DualOutput and Append tests as handler behavior tests despite production being file-only
+- [03-02]: Bubbletea owns stdout on the main goroutine while HTTP serves in a background goroutine
+- [03-02]: Kept the TUI in the main buffer (no alt screen) for log-tail behavior and clean exit
+- [03-02]: Used renderView helper to make TUI output directly testable
+- [04-01]: Used charm.land/lipgloss/v2 to style rows while preserving Bubble Tea v2 compatibility
+- [04-01]: Enforced exact method/status color mappings in tests, not just generic distinctness
+- [04-01]: Used left-border row markers plus alternating faint treatment for compact separation
 
 ### Pending Todos
 
@@ -87,5 +94,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-06T13:56:44Z
-Stopped at: Completed 03-01-PLAN.md
-Resume file: .planning/phases/03-tui-scaffolding-and-http-bridge/03-01-SUMMARY.md
+Stopped at: Completed Phase 4; next action is planning Phase 5
+Resume file: .planning/phases/04-compact-list-with-styles/04-01-SUMMARY.md
