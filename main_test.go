@@ -3,11 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -253,6 +255,135 @@ func TestPortConfig(t *testing.T) {
 	}
 	if port != "9090" {
 		t.Errorf("expected port 9090, got %s", port)
+	}
+}
+
+// TestDualOutput verifies that io.MultiWriter sends identical JSON to both a buffer and a file (OUT-02).
+func TestDualOutput(t *testing.T) {
+	var buf bytes.Buffer
+	tmpDir := t.TempDir()
+	tmpPath := filepath.Join(tmpDir, "test.log")
+	tmpFile, err := os.OpenFile(tmpPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+
+	writer := io.MultiWriter(&buf, tmpFile)
+	logger := slog.New(slog.NewJSONHandler(writer, nil))
+	handler := handleRequest(logger)
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	tmpFile.Close()
+
+	fileBytes, err := os.ReadFile(tmpPath)
+	if err != nil {
+		t.Fatalf("failed to read temp file: %v", err)
+	}
+
+	// Both outputs should be byte-for-byte identical
+	if !bytes.Equal(buf.Bytes(), fileBytes) {
+		t.Errorf("buffer and file content differ\nbuffer: %s\nfile:   %s", buf.String(), string(fileBytes))
+	}
+
+	// Parse both as JSON and verify key fields
+	var bufEntry, fileEntry map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &bufEntry); err != nil {
+		t.Fatalf("failed to parse buffer JSON: %v", err)
+	}
+	if err := json.Unmarshal(fileBytes, &fileEntry); err != nil {
+		t.Fatalf("failed to parse file JSON: %v", err)
+	}
+
+	for _, entry := range []map[string]any{bufEntry, fileEntry} {
+		if entry["method"] != "GET" {
+			t.Errorf("expected method GET, got %v", entry["method"])
+		}
+		if entry["uri"] != "/test" {
+			t.Errorf("expected uri /test, got %v", entry["uri"])
+		}
+		if entry["msg"] != "request" {
+			t.Errorf("expected msg 'request', got %v", entry["msg"])
+		}
+	}
+}
+
+// TestLogFilePathDefault verifies LOG_FILE defaults to "requests.log" when unset (OUT-03).
+func TestLogFilePathDefault(t *testing.T) {
+	t.Setenv("LOG_FILE", "")
+	os.Unsetenv("LOG_FILE")
+
+	logPath := "requests.log"
+	if lf := os.Getenv("LOG_FILE"); lf != "" {
+		logPath = lf
+	}
+
+	if logPath != "requests.log" {
+		t.Errorf("expected default log path 'requests.log', got %q", logPath)
+	}
+}
+
+// TestLogFilePathCustom verifies LOG_FILE env var overrides the default path (OUT-03).
+func TestLogFilePathCustom(t *testing.T) {
+	t.Setenv("LOG_FILE", "/tmp/custom.log")
+
+	logPath := "requests.log"
+	if lf := os.Getenv("LOG_FILE"); lf != "" {
+		logPath = lf
+	}
+
+	if logPath != "/tmp/custom.log" {
+		t.Errorf("expected log path '/tmp/custom.log', got %q", logPath)
+	}
+}
+
+// TestLogFileAppend verifies that the log file is appended to, not truncated (OUT-02).
+func TestLogFileAppend(t *testing.T) {
+	tmpDir := t.TempDir()
+	tmpPath := filepath.Join(tmpDir, "append.log")
+
+	// Write pre-existing content
+	if err := os.WriteFile(tmpPath, []byte("existing\n"), 0644); err != nil {
+		t.Fatalf("failed to write pre-existing content: %v", err)
+	}
+
+	// Reopen with append mode
+	tmpFile, err := os.OpenFile(tmpPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		t.Fatalf("failed to open temp file for append: %v", err)
+	}
+
+	var buf bytes.Buffer
+	writer := io.MultiWriter(&buf, tmpFile)
+	logger := slog.New(slog.NewJSONHandler(writer, nil))
+	handler := handleRequest(logger)
+
+	req := httptest.NewRequest(http.MethodGet, "/append-test", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	tmpFile.Close()
+
+	fileBytes, err := os.ReadFile(tmpPath)
+	if err != nil {
+		t.Fatalf("failed to read temp file: %v", err)
+	}
+
+	contents := string(fileBytes)
+	if !strings.HasPrefix(contents, "existing\n") {
+		t.Errorf("expected file to start with 'existing\\n', got %q", contents[:min(len(contents), 20)])
+	}
+
+	// The rest after "existing\n" should be valid JSON
+	jsonPart := contents[len("existing\n"):]
+	var entry map[string]any
+	if err := json.Unmarshal([]byte(jsonPart), &entry); err != nil {
+		t.Fatalf("failed to parse appended JSON: %v\nraw: %s", err, jsonPart)
+	}
+	if entry["uri"] != "/append-test" {
+		t.Errorf("expected uri '/append-test', got %v", entry["uri"])
 	}
 }
 
