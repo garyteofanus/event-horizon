@@ -39,10 +39,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. After starting the server, JSON log entries appear on both stdout and in the log file with identical content
   2. Setting `LOG_FILE` env var changes the log file path; omitting it defaults to `requests.log`
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 02-01: TBD
+- [ ] 02-01-PLAN.md — TDD: io.MultiWriter dual output with LOG_FILE configuration
 
 ## Progress
 
@@ -52,4 +52,4 @@ Phases execute in numeric order: 1 -> 2
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Structured Logging Core | 1/1 | Complete | 2026-03-06 |
-| 2. Dual Output | 0/? | Not started | - |
+| 2. Dual Output | 0/1 | Not started | - |
