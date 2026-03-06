@@ -19,8 +19,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Output
 
 - [x] **OUT-01**: JSON logs are written to stdout
-- [ ] **OUT-02**: JSON logs are simultaneously written to a log file
-- [ ] **OUT-03**: Log file path is configurable via `LOG_FILE` env var (default: `requests.log`)
+- [x] **OUT-02**: JSON logs are simultaneously written to a log file
+- [x] **OUT-03**: Log file path is configurable via `LOG_FILE` env var (default: `requests.log`)
 
 ### Server
 
@@ -72,8 +72,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | LOG-05 | Phase 1 | Complete |
 | LOG-06 | Phase 1 | Complete |
 | OUT-01 | Phase 1 | Complete |
-| OUT-02 | Phase 2 | Pending |
-| OUT-03 | Phase 2 | Pending |
+| OUT-02 | Phase 2 | Complete |
+| OUT-03 | Phase 2 | Complete |
 | SRV-01 | Phase 1 | Complete |
 | SRV-02 | Phase 1 | Complete |
 | SRV-03 | Phase 1 | Complete |
