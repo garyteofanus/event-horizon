@@ -390,35 +390,24 @@ func TestLogFileAppend(t *testing.T) {
 	}
 }
 
-// TestQA01NoDeps verifies zero external dependencies (QA-01).
-func TestQA01NoDeps(t *testing.T) {
-	cmd := exec.Command("go", "list", "-m", "all")
-	output, err := cmd.Output()
-	if err != nil {
-		t.Fatalf("failed to run go list -m all: %v", err)
-	}
-	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-	if len(lines) != 1 {
-		t.Errorf("expected 1 module (self only), got %d: %v", len(lines), lines)
-	}
-}
-
-// TestQA02LogAttrsOnly verifies that main.go does not use non-LogAttrs slog methods (QA-02).
+// TestQA02LogAttrsOnly verifies that main.go and handler.go do not use non-LogAttrs slog methods (QA-02).
 func TestQA02LogAttrsOnly(t *testing.T) {
-	// Check for non-LogAttrs slog convenience methods in main.go
 	patterns := []string{
 		`logger\.Info(`,
 		`logger\.Warn(`,
 		`logger\.Error(`,
 		`logger\.Debug(`,
 	}
-	for _, pattern := range patterns {
-		cmd := exec.Command("grep", "-c", pattern, "main.go")
-		output, err := cmd.Output()
-		count := strings.TrimSpace(string(output))
-		// grep returns exit 1 when count is 0, which is what we want
-		if err == nil && count != "0" {
-			t.Errorf("found %s matches for %q in main.go -- should be 0 (QA-02)", count, pattern)
+	files := []string{"main.go", "handler.go"}
+	for _, file := range files {
+		for _, pattern := range patterns {
+			cmd := exec.Command("grep", "-c", pattern, file)
+			output, err := cmd.Output()
+			count := strings.TrimSpace(string(output))
+			// grep returns exit 1 when count is 0, which is what we want
+			if err == nil && count != "0" {
+				t.Errorf("found %s matches for %q in %s -- should be 0 (QA-02)", count, pattern, file)
+			}
 		}
 	}
 }

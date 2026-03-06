@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -30,11 +29,9 @@ func main() {
 	}
 	defer logFile.Close()
 
-	writer := io.MultiWriter(os.Stdout, logFile)
-	logger := slog.New(slog.NewJSONHandler(writer, nil))
+	logger := slog.New(slog.NewJSONHandler(logFile, nil))
 
 	reqCh := make(chan RequestData, 256)
-	_ = reqCh // consumed by TUI in Plan 02
 	http.HandleFunc("/", handleRequest(logger, reqCh))
 
 	logger.LogAttrs(context.Background(), slog.LevelInfo, "server starting",
