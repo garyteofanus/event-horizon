@@ -1,12 +1,24 @@
 package main
 
 import (
+	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
 )
+
+var ansiPattern = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func stripANSI(s string) string {
+	return ansiPattern.ReplaceAllString(s, "")
+}
+
+func colorString(c any) string {
+	return fmt.Sprint(c)
+}
 
 func TestModelUpdateRequestMsg(t *testing.T) {
 	ch := make(chan RequestData, 1)
@@ -47,7 +59,7 @@ func TestModelUpdateQuit(t *testing.T) {
 
 func TestModelViewEmpty(t *testing.T) {
 	m := model{port: "8080", logPath: "requests.log"}
-	view := renderView(m)
+	view := stripANSI(renderView(m))
 
 	if !strings.Contains(view, "Waiting for requests...") {
 		t.Errorf("empty view should contain 'Waiting for requests...', got:\n%s", view)
@@ -75,7 +87,7 @@ func TestModelViewWithRequests(t *testing.T) {
 			},
 		},
 	}
-	view := renderView(m)
+	view := stripANSI(renderView(m))
 
 	if !strings.Contains(view, "14:32:05 GET /api/users 200 2ms") {
 		t.Errorf("view should contain first request line, got:\n%s", view)
@@ -90,9 +102,176 @@ func TestModelViewWithRequests(t *testing.T) {
 
 func TestModelViewHeader(t *testing.T) {
 	m := model{port: "9090", logPath: "/tmp/test.log"}
-	view := renderView(m)
+	view := stripANSI(renderView(m))
 
 	if !strings.Contains(view, "blackhole :9090 -> /tmp/test.log") {
 		t.Errorf("view should contain header 'blackhole :9090 -> /tmp/test.log', got:\n%s", view)
+	}
+}
+
+func TestRenderRequestRowContainsCompactFields(t *testing.T) {
+	row := stripANSI(renderRequestRow(RequestData{
+		Timestamp:    time.Date(2026, 3, 6, 14, 32, 5, 0, time.UTC),
+		Method:       "GET",
+		URI:          "/api/users?page=1",
+		Status:       200,
+		ResponseTime: 2 * time.Millisecond,
+	}, 0, 80))
+
+	if !strings.Contains(row, "14:32:05 GET /api/users?page=1 200 2ms") {
+		t.Fatalf("expected compact one-line row, got %q", row)
+	}
+	if strings.Count(row, "\n") != 0 {
+		t.Fatalf("expected request row to stay on one line, got %q", row)
+	}
+	if !strings.HasPrefix(row, "│ ") {
+		t.Fatalf("expected row border prefix, got %q", row)
+	}
+}
+
+func TestMethodStyleMappings(t *testing.T) {
+	tests := []struct {
+		method   string
+		expected string
+	}{
+		{method: "GET", expected: colorString(colorGreen)},
+		{method: "POST", expected: colorString(colorBlue)},
+		{method: "DELETE", expected: colorString(colorRed)},
+		{method: "PUT", expected: colorString(colorYellow)},
+		{method: "PATCH", expected: colorString(colorCyan)},
+		{method: "OPTIONS", expected: colorString(colorNeutral)},
+	}
+
+	for _, tc := range tests {
+		style := methodStyle(tc.method)
+		if !style.GetBold() {
+			t.Fatalf("expected bold style for method %s", tc.method)
+		}
+		if got := colorString(style.GetForeground()); got != tc.expected {
+			t.Fatalf("expected method %s color %s, got %s", tc.method, tc.expected, got)
+		}
+	}
+}
+
+func TestStatusStyleMappings(t *testing.T) {
+	tests := []struct {
+		status   int
+		expected string
+	}{
+		{status: 200, expected: colorString(colorGreen)},
+		{status: 302, expected: colorString(colorCyan)},
+		{status: 404, expected: colorString(colorYellow)},
+		{status: 500, expected: colorString(colorRed)},
+		{status: 102, expected: colorString(colorNeutral)},
+	}
+
+	for _, tc := range tests {
+		style := statusStyle(tc.status)
+		if !style.GetBold() {
+			t.Fatalf("expected bold style for status %d", tc.status)
+		}
+		if got := colorString(style.GetForeground()); got != tc.expected {
+			t.Fatalf("expected status %d color %s, got %s", tc.status, tc.expected, got)
+		}
+	}
+}
+
+func TestMethodStylesRenderANSI(t *testing.T) {
+	rendered := methodStyle("GET").Render("GET")
+	if !strings.Contains(rendered, "\x1b[") {
+		t.Fatalf("expected ANSI-styled method render, got %q", rendered)
+	}
+}
+
+func TestStatusStylesRenderANSI(t *testing.T) {
+	rendered := statusStyle(200).Render("200")
+	if !strings.Contains(rendered, "\x1b[") {
+		t.Fatalf("expected ANSI-styled status render, got %q", rendered)
+	}
+}
+
+func TestRenderViewSeparatesAdjacentRows(t *testing.T) {
+	m := model{
+		port:    "8080",
+		logPath: "requests.log",
+		requests: []RequestData{
+			{
+				Timestamp:    time.Date(2026, 1, 1, 14, 32, 5, 0, time.UTC),
+				Method:       "GET",
+				URI:          "/api/users",
+				Status:       200,
+				ResponseTime: 2 * time.Millisecond,
+			},
+			{
+				Timestamp:    time.Date(2026, 1, 1, 14, 32, 10, 0, time.UTC),
+				Method:       "POST",
+				URI:          "/api/data",
+				Status:       404,
+				ResponseTime: 5 * time.Millisecond,
+			},
+		},
+	}
+
+	view := stripANSI(renderView(m))
+	if strings.Count(view, "│ ") < 2 {
+		t.Fatalf("expected each request row to include a border prefix, got:\n%s", view)
+	}
+}
+
+func TestRenderViewPreservesBottomAppendOrder(t *testing.T) {
+	m := model{
+		port:    "8080",
+		logPath: "requests.log",
+		requests: []RequestData{
+			{
+				Timestamp:    time.Date(2026, 1, 1, 14, 32, 5, 0, time.UTC),
+				Method:       "GET",
+				URI:          "/first",
+				Status:       200,
+				ResponseTime: 2 * time.Millisecond,
+			},
+			{
+				Timestamp:    time.Date(2026, 1, 1, 14, 32, 10, 0, time.UTC),
+				Method:       "POST",
+				URI:          "/second",
+				Status:       200,
+				ResponseTime: 5 * time.Millisecond,
+			},
+		},
+	}
+
+	view := stripANSI(renderView(m))
+	first := strings.Index(view, "/first")
+	second := strings.Index(view, "/second")
+	if first == -1 || second == -1 || first >= second {
+		t.Fatalf("expected older request before newer request, got:\n%s", view)
+	}
+}
+
+func TestRenderViewAutoScrollStillShowsMostRecentRows(t *testing.T) {
+	requests := make([]RequestData, 0, 5)
+	for i := 0; i < 5; i++ {
+		requests = append(requests, RequestData{
+			Timestamp:    time.Date(2026, 1, 1, 14, 32, 5+i, 0, time.UTC),
+			Method:       "GET",
+			URI:          fmt.Sprintf("/req-%d", i),
+			Status:       200,
+			ResponseTime: 2 * time.Millisecond,
+		})
+	}
+
+	m := model{
+		port:     "8080",
+		logPath:  "requests.log",
+		requests: requests,
+		height:   6,
+	}
+
+	view := stripANSI(renderView(m))
+	if strings.Contains(view, "/req-0") || strings.Contains(view, "/req-1") {
+		t.Fatalf("expected oldest requests to be clipped, got:\n%s", view)
+	}
+	if !strings.Contains(view, "/req-3") || !strings.Contains(view, "/req-4") {
+		t.Fatalf("expected newest requests to remain visible, got:\n%s", view)
 	}
 }

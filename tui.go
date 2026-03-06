@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // requestMsg is the tea.Msg type for channel messages carrying request data.
@@ -53,20 +55,109 @@ func (m model) View() tea.View {
 	return tea.NewView(renderView(m))
 }
 
+var (
+	colorGreen         = lipgloss.Color("10")
+	colorBlue          = lipgloss.Color("12")
+	colorRed           = lipgloss.Color("9")
+	colorYellow        = lipgloss.Color("11")
+	colorCyan          = lipgloss.Color("14")
+	colorMuted         = lipgloss.Color("245")
+	colorMutedBright   = lipgloss.Color("246")
+	colorNeutral       = lipgloss.Color("252")
+	colorBorder        = lipgloss.Color("240")
+	headerStyle        = lipgloss.NewStyle().Bold(true)
+	separatorStyle     = lipgloss.NewStyle().Faint(true)
+	timestampStyle     = lipgloss.NewStyle().Foreground(colorMuted)
+	pathStyle          = lipgloss.NewStyle()
+	timeStyle          = lipgloss.NewStyle().Foreground(colorMutedBright)
+	defaultMethodStyle = lipgloss.NewStyle().Bold(true).Foreground(colorNeutral)
+	defaultStatusStyle = lipgloss.NewStyle().Bold(true).Foreground(colorNeutral)
+	rowBaseStyle       = lipgloss.NewStyle().
+				BorderStyle(lipgloss.NormalBorder()).
+				BorderLeft(true).
+				BorderForeground(colorBorder).
+				PaddingLeft(1)
+	alternatingRowStyle = lipgloss.NewStyle().Faint(true)
+)
+
+func methodStyle(method string) lipgloss.Style {
+	switch method {
+	case "GET":
+		return lipgloss.NewStyle().Bold(true).Foreground(colorGreen)
+	case "POST":
+		return lipgloss.NewStyle().Bold(true).Foreground(colorBlue)
+	case "DELETE":
+		return lipgloss.NewStyle().Bold(true).Foreground(colorRed)
+	case "PUT":
+		return lipgloss.NewStyle().Bold(true).Foreground(colorYellow)
+	case "PATCH":
+		return lipgloss.NewStyle().Bold(true).Foreground(colorCyan)
+	default:
+		return defaultMethodStyle
+	}
+}
+
+func statusStyle(code int) lipgloss.Style {
+	switch {
+	case code >= 200 && code < 300:
+		return lipgloss.NewStyle().Bold(true).Foreground(colorGreen)
+	case code >= 300 && code < 400:
+		return lipgloss.NewStyle().Bold(true).Foreground(colorCyan)
+	case code >= 400 && code < 500:
+		return lipgloss.NewStyle().Bold(true).Foreground(colorYellow)
+	case code >= 500 && code < 600:
+		return lipgloss.NewStyle().Bold(true).Foreground(colorRed)
+	default:
+		return defaultStatusStyle
+	}
+}
+
+func formatPath(uri string) string {
+	if len(uri) > 40 {
+		return uri[:37] + "..."
+	}
+	return uri
+}
+
+func formatResponseTime(d time.Duration) string {
+	if d < time.Millisecond {
+		return "<1ms"
+	}
+	return fmt.Sprintf("%dms", d.Milliseconds())
+}
+
+func renderRequestRow(r RequestData, rowIndex int, width int) string {
+	content := strings.Join([]string{
+		timestampStyle.Render(r.Timestamp.Format("15:04:05")),
+		methodStyle(r.Method).Render(r.Method),
+		pathStyle.Render(formatPath(r.URI)),
+		statusStyle(r.Status).Render(fmt.Sprintf("%d", r.Status)),
+		timeStyle.Render(formatResponseTime(r.ResponseTime)),
+	}, " ")
+
+	row := rowBaseStyle.Render(content)
+	if rowIndex%2 == 1 {
+		row = alternatingRowStyle.Render(row)
+	}
+
+	return row
+}
+
 // renderView builds the raw string for the TUI display.
 // Extracted as a helper for testability (tea.View may not expose string content easily).
 func renderView(m model) string {
 	var s strings.Builder
 
 	// Header bar
-	s.WriteString(fmt.Sprintf("blackhole :%s -> %s\n", m.port, m.logPath))
+	s.WriteString(headerStyle.Render(fmt.Sprintf("blackhole :%s -> %s", m.port, m.logPath)))
+	s.WriteString("\n")
 
 	// Separator
 	sepWidth := 40
 	if m.width > sepWidth {
 		sepWidth = m.width
 	}
-	s.WriteString(strings.Repeat("─", sepWidth))
+	s.WriteString(separatorStyle.Render(strings.Repeat("─", sepWidth)))
 	s.WriteString("\n")
 
 	// Content area
@@ -81,14 +172,14 @@ func renderView(m model) string {
 				reqs = reqs[len(reqs)-availableLines:]
 			}
 		}
-		for _, r := range reqs {
-			s.WriteString(formatRequestLine(r))
+		for i, r := range reqs {
+			s.WriteString(renderRequestRow(r, i, sepWidth))
 			s.WriteString("\n")
 		}
 	}
 
 	// Separator
-	s.WriteString(strings.Repeat("─", sepWidth))
+	s.WriteString(separatorStyle.Render(strings.Repeat("─", sepWidth)))
 	s.WriteString("\n")
 
 	// Status line
