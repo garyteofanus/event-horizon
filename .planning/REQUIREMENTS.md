@@ -40,8 +40,8 @@ Requirements for TUI Log Viewer milestone. Each maps to roadmap phases.
 ### TUI Core
 
 - [ ] **TUI-01**: Server launches a bubbletea v2 TUI on the main goroutine, HTTP server runs in background
-- [ ] **TUI-02**: HTTP handler sends request data to TUI via buffered channel (thread-safe bridge)
-- [ ] **TUI-03**: JSON structured logging writes to file only; TUI owns stdout with human-readable format
+- [x] **TUI-02**: HTTP handler sends request data to TUI via buffered channel (thread-safe bridge)
+- [x] **TUI-03**: JSON structured logging writes to file only; TUI owns stdout with human-readable format
 
 ### Display
 
@@ -125,8 +125,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | QA-01 | Phase 1 | Complete |
 | QA-02 | Phase 1 | Complete |
 | TUI-01 | Phase 3 | Pending |
-| TUI-02 | Phase 3 | Pending |
-| TUI-03 | Phase 3 | Pending |
+| TUI-02 | Phase 3 | Complete |
+| TUI-03 | Phase 3 | Complete |
 | DISP-01 | Phase 4 | Pending |
 | DISP-02 | Phase 4 | Pending |
 | DISP-03 | Phase 4 | Pending |
