@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 Phase: 2 of 2 (Dual Output)
 Plan: 1 of 1 in current phase (COMPLETE)
 Status: All phases complete
-Last activity: 2026-03-06 — Completed 02-01-PLAN.md
+Last activity: 2026-03-06 - Completed quick task 1: Use cloudflared to run this service to public
 
 Progress: [██████████] 100%
 
@@ -74,6 +74,12 @@ None yet.
 ### Blockers/Concerns
 
 None yet.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | Use cloudflared to run this service to public. Document how as well so I can do this quickly next time | 2026-03-06 | 07e94e5 | [1-use-cloudflared-to-run-this-service-to-p](./quick/1-use-cloudflared-to-run-this-service-to-p/) |
 
 ## Session Continuity
 
