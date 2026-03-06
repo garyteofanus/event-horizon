@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+
+	tea "charm.land/bubbletea/v2"
 )
 
 func main() {
@@ -34,14 +37,22 @@ func main() {
 	reqCh := make(chan RequestData, 256)
 	http.HandleFunc("/", handleRequest(logger, reqCh))
 
-	logger.LogAttrs(context.Background(), slog.LevelInfo, "server starting",
-		slog.String("port", port),
-		slog.String("log_file", logPath),
-	)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		logger.LogAttrs(context.Background(), slog.LevelError, "server failed",
-			slog.String("error", err.Error()),
-		)
+	// Start HTTP server in background goroutine
+	go func() {
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
+			fmt.Fprintf(os.Stderr, "server error: %v\n", err)
+			os.Exit(1)
+		}
+	}()
+
+	// Run TUI on main goroutine
+	p := tea.NewProgram(model{
+		reqCh:   reqCh,
+		port:    port,
+		logPath: logPath,
+	})
+	if _, err := p.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "TUI error: %v\n", err)
 		os.Exit(1)
 	}
 }
