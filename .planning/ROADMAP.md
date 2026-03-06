@@ -72,7 +72,11 @@ Plans:
   2. Sending an HTTP request to the server causes a new text line to appear in the TUI within one second
   3. JSON structured log entries continue to be written to the log file while the TUI is active
   4. Pressing q or ctrl+c exits the TUI and shuts down the HTTP server cleanly (no hung processes)
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Channel bridge, RequestData type, handler adaptation, file-only logging
+- [ ] 03-02-PLAN.md — Bubbletea v2 TUI model, main orchestration, end-to-end verification
 
 ### Phase 4: Compact List with Styles
 **Goal**: Each request renders as a scannable, color-coded one-line row with clear visual separation between entries
@@ -106,6 +110,6 @@ Phases execute in numeric order: 3 -> 4 -> 5
 |-------|-----------|----------------|--------|-----------|
 | 1. Structured Logging Core | v1.0 | 1/1 | Complete | 2026-03-06 |
 | 2. Dual Output | v1.0 | 1/1 | Complete | 2026-03-06 |
-| 3. TUI Scaffolding and HTTP Bridge | v1.1 | 0/? | Not started | - |
+| 3. TUI Scaffolding and HTTP Bridge | v1.1 | 0/2 | Not started | - |
 | 4. Compact List with Styles | v1.1 | 0/? | Not started | - |
 | 5. Interactive Features and Polish | v1.1 | 0/? | Not started | - |
