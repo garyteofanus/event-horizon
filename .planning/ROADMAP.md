@@ -12,7 +12,7 @@ Migrate the existing echo server from unstructured `fmt.Printf` logging to struc
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Structured Logging Core** - Replace fmt.Printf with slog JSONHandler, change response to empty 200 OK
+- [x] **Phase 1: Structured Logging Core** - Replace fmt.Printf with slog JSONHandler, change response to empty 200 OK
 - [ ] **Phase 2: Dual Output** - Add simultaneous file logging alongside stdout with configurable path
 
 ## Phase Details
@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 1 plan
 
 Plans:
-- [ ] 01-01-PLAN.md — TDD: slog structured logging migration with tests
+- [x] 01-01-PLAN.md — TDD: slog structured logging migration with tests
 
 ### Phase 2: Dual Output
 **Goal**: JSON logs are written to both stdout and a configurable log file simultaneously
@@ -51,5 +51,5 @@ Phases execute in numeric order: 1 -> 2
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Structured Logging Core | 0/1 | Not started | - |
+| 1. Structured Logging Core | 1/1 | Complete | 2026-03-06 |
 | 2. Dual Output | 0/? | Not started | - |
