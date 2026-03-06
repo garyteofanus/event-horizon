@@ -19,7 +19,8 @@ import (
 func setupTest() (*bytes.Buffer, http.HandlerFunc) {
 	var buf bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&buf, nil))
-	handler := handleRequest(logger)
+	ch := make(chan RequestData, 1)
+	handler := handleRequest(logger, ch)
 	return &buf, handler
 }
 
@@ -270,7 +271,8 @@ func TestDualOutput(t *testing.T) {
 
 	writer := io.MultiWriter(&buf, tmpFile)
 	logger := slog.New(slog.NewJSONHandler(writer, nil))
-	handler := handleRequest(logger)
+	ch := make(chan RequestData, 1)
+	handler := handleRequest(logger, ch)
 
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
 	rec := httptest.NewRecorder()
@@ -358,7 +360,8 @@ func TestLogFileAppend(t *testing.T) {
 	var buf bytes.Buffer
 	writer := io.MultiWriter(&buf, tmpFile)
 	logger := slog.New(slog.NewJSONHandler(writer, nil))
-	handler := handleRequest(logger)
+	ch := make(chan RequestData, 1)
+	handler := handleRequest(logger, ch)
 
 	req := httptest.NewRequest(http.MethodGet, "/append-test", nil)
 	rec := httptest.NewRecorder()
