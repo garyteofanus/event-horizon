@@ -124,25 +124,25 @@ Deferred to future release. Tracked but not in current roadmap.
 | SRV-03 | Phase 1 | Complete |
 | QA-01 | Phase 1 | Complete |
 | QA-02 | Phase 1 | Complete |
-| TUI-01 | — | Pending |
-| TUI-02 | — | Pending |
-| TUI-03 | — | Pending |
-| DISP-01 | — | Pending |
-| DISP-02 | — | Pending |
-| DISP-03 | — | Pending |
-| DISP-04 | — | Pending |
-| INTR-01 | — | Pending |
-| INTR-02 | — | Pending |
-| INTR-03 | — | Pending |
-| INTR-04 | — | Pending |
-| ROBU-01 | — | Pending |
+| TUI-01 | Phase 3 | Pending |
+| TUI-02 | Phase 3 | Pending |
+| TUI-03 | Phase 3 | Pending |
+| DISP-01 | Phase 4 | Pending |
+| DISP-02 | Phase 4 | Pending |
+| DISP-03 | Phase 4 | Pending |
+| DISP-04 | Phase 4 | Pending |
+| INTR-01 | Phase 5 | Pending |
+| INTR-02 | Phase 5 | Pending |
+| INTR-03 | Phase 5 | Pending |
+| INTR-04 | Phase 5 | Pending |
+| ROBU-01 | Phase 5 | Pending |
 
 **Coverage:**
 - v1.0 requirements: 14 total (all complete)
 - v1.1 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-06*
-*Last updated: 2026-03-06 after v1.1 milestone definition*
+*Last updated: 2026-03-06 after v1.1 roadmap creation*

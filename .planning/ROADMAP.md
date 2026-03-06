@@ -1,8 +1,9 @@
-# Roadmap: Echo Server
+# Roadmap: Blackhole Server
 
-## Overview
+## Milestones
 
-Migrate the existing echo server from unstructured `fmt.Printf` logging to structured JSON logging via `slog`, then add dual output (stdout + file). Two phases: first replace the logging core and response behavior, then layer on file output with configuration. The server's existing HTTP acceptance behavior is preserved throughout.
+- v1.0 Structured Logging - Phases 1-2 (shipped 2026-03-06)
+- v1.1 TUI Log Viewer - Phases 3-5 (in progress)
 
 ## Phases
 
@@ -12,10 +13,26 @@ Migrate the existing echo server from unstructured `fmt.Printf` logging to struc
 
 Decimal phases appear between their surrounding integers in numeric order.
 
+<details>
+<summary>v1.0 Structured Logging (Phases 1-2) - SHIPPED 2026-03-06</summary>
+
 - [x] **Phase 1: Structured Logging Core** - Replace fmt.Printf with slog JSONHandler, change response to empty 200 OK
-- [ ] **Phase 2: Dual Output** - Add simultaneous file logging alongside stdout with configurable path
+- [x] **Phase 2: Dual Output** - Add simultaneous file logging alongside stdout with configurable path
+
+</details>
+
+### v1.1 TUI Log Viewer (In Progress)
+
+**Milestone Goal:** Replace raw stdout JSON with a live terminal UI for inspecting requests in real time.
+
+- [ ] **Phase 3: TUI Scaffolding and HTTP Bridge** - Wire up bubbletea v2 TUI with channel-based request streaming from HTTP server
+- [ ] **Phase 4: Compact List with Styles** - Color-coded one-line-per-request display with visual separation
+- [ ] **Phase 5: Interactive Features and Polish** - Navigate, expand/collapse, clear logs, help footer, resize handling
 
 ## Phase Details
+
+<details>
+<summary>v1.0 Structured Logging (Phases 1-2) - SHIPPED 2026-03-06</summary>
 
 ### Phase 1: Structured Logging Core
 **Goal**: Every request is logged as structured JSON to stdout with all required fields, and the server responds with empty 200 OK
@@ -42,14 +59,53 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 02-01-PLAN.md — TDD: io.MultiWriter dual output with LOG_FILE configuration
+- [x] 02-01-PLAN.md — TDD: io.MultiWriter dual output with LOG_FILE configuration
+
+</details>
+
+### Phase 3: TUI Scaffolding and HTTP Bridge
+**Goal**: A working bubbletea v2 TUI launches on startup, receives live request data from the HTTP server via channel, and displays plain-text request lines as they arrive
+**Depends on**: Phase 2 (existing server with file logging)
+**Requirements**: TUI-01, TUI-02, TUI-03
+**Success Criteria** (what must be TRUE):
+  1. Running the server opens a terminal UI that takes over stdout; the user sees a TUI screen instead of raw JSON output
+  2. Sending an HTTP request to the server causes a new text line to appear in the TUI within one second
+  3. JSON structured log entries continue to be written to the log file while the TUI is active
+  4. Pressing q or ctrl+c exits the TUI and shuts down the HTTP server cleanly (no hung processes)
+**Plans**: TBD
+
+### Phase 4: Compact List with Styles
+**Goal**: Each request renders as a scannable, color-coded one-line row with clear visual separation between entries
+**Depends on**: Phase 3
+**Requirements**: DISP-01, DISP-02, DISP-03, DISP-04
+**Success Criteria** (what must be TRUE):
+  1. Each request row shows timestamp, HTTP method, path, and status code on a single line
+  2. HTTP methods are visually distinct by color (GET=green, POST=blue, DELETE=red, PUT=yellow, PATCH=cyan)
+  3. Status codes are visually distinct by color range (2xx=green, 4xx=yellow, 5xx=red)
+  4. Adjacent log entries have visible separation (borders, spacing, or alternating styles) so the user can distinguish individual requests at a glance
+**Plans**: TBD
+
+### Phase 5: Interactive Features and Polish
+**Goal**: Users can navigate the request list, inspect individual request details on demand, manage visible entries, and see available keybindings -- all adapting to terminal size changes
+**Depends on**: Phase 4
+**Requirements**: INTR-01, INTR-02, INTR-03, INTR-04, ROBU-01
+**Success Criteria** (what must be TRUE):
+  1. User can move a visible cursor through the request list using j/k or arrow keys
+  2. User can press a key on a selected request to expand it, revealing headers, body, client IP, and response time; pressing again collapses it
+  3. User can press a keybind to clear all visible log entries from the TUI (file log is unaffected)
+  4. A footer displays available keybindings so the user does not need to memorize controls
+  5. Resizing the terminal window re-renders the TUI correctly without crashing or corrupting the display
+**Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2
+Phases execute in numeric order: 3 -> 4 -> 5
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Structured Logging Core | 1/1 | Complete | 2026-03-06 |
-| 2. Dual Output | 0/1 | Not started | - |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Structured Logging Core | v1.0 | 1/1 | Complete | 2026-03-06 |
+| 2. Dual Output | v1.0 | 1/1 | Complete | 2026-03-06 |
+| 3. TUI Scaffolding and HTTP Bridge | v1.1 | 0/? | Not started | - |
+| 4. Compact List with Styles | v1.1 | 0/? | Not started | - |
+| 5. Interactive Features and Polish | v1.1 | 0/? | Not started | - |
