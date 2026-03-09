@@ -3,7 +3,7 @@
 ## Milestones
 
 - v1.0 Structured Logging - Phases 1-2 (shipped 2026-03-06)
-- v1.1 TUI Log Viewer - Phases 3-5 (in progress)
+- v1.1 TUI Log Viewer - Phases 3-7 (in progress)
 
 ## Phases
 
@@ -116,6 +116,8 @@ Phases execute in numeric order: 3 -> 4 -> 5
 | 3. TUI Scaffolding and HTTP Bridge | v1.1 | 2/2 | Complete | 2026-03-06 |
 | 4. Compact List with Styles | v1.1 | 1/1 | Complete | 2026-03-06 |
 | 5. Interactive Features and Polish | v1.1 | 0/? | Not started | - |
+| 6. Copy & Format | v1.1 | 0/2 | Not started | - |
+| 7. Retroactive Verification & Cleanup | v1.1 | 0/? | Not started | - |
 
 ### Phase 6: Copy request body and format body in expanded view
 
@@ -135,3 +137,16 @@ Phases execute in numeric order: 3 -> 4 -> 5
 Plans:
 - [ ] 06-01-PLAN.md — Clipboard copy with flash messages and keybinding remap
 - [ ] 06-02-PLAN.md — JSON formatting, syntax highlighting, and format toggle
+
+### Phase 7: Retroactive Verification and Requirements Cleanup
+**Goal:** Close all documentation/process gaps identified by milestone audit — create missing VERIFICATION.md and SUMMARY.md files, update REQUIREMENTS.md with Phase 6 entries and correct checkboxes, remove dead code
+**Depends on:** Phase 6
+**Requirements**: TUI-01, TUI-02, TUI-03, DISP-01, DISP-02, DISP-03, DISP-04, INTR-01, INTR-02, INTR-03, INTR-04, ROBU-01, COPY-01, COPY-02, COPY-03, COPY-04, COPY-05, FMT-01, FMT-02, FMT-03, FMT-04, KEY-01, KEY-02
+**Gap Closure:** Closes gaps from v1.1 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. VERIFICATION.md exists for phases 3, 4, and 5 with requirement-level pass/fail results
+  2. Phase 5 has a SUMMARY.md documenting implemented features
+  3. REQUIREMENTS.md contains all Phase 6 requirement IDs (COPY-01–05, FMT-01–04, KEY-01–02) in both the requirements list and traceability table
+  4. All implemented v1.1 requirement checkboxes are marked `[x]`
+  5. formatRequestLine dead code is removed from handler.go
+**Plans**: TBD

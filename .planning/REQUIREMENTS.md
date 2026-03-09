@@ -39,27 +39,41 @@ Requirements for TUI Log Viewer milestone. Each maps to roadmap phases.
 
 ### TUI Core
 
-- [ ] **TUI-01**: Server launches a bubbletea v2 TUI on the main goroutine, HTTP server runs in background
+- [x] **TUI-01**: Server launches a bubbletea v2 TUI on the main goroutine, HTTP server runs in background
 - [x] **TUI-02**: HTTP handler sends request data to TUI via buffered channel (thread-safe bridge)
 - [x] **TUI-03**: JSON structured logging writes to file only; TUI owns stdout with human-readable format
 
 ### Display
 
-- [ ] **DISP-01**: Each request displays as a compact one-line row: timestamp, method, path, status code
-- [ ] **DISP-02**: HTTP methods are color-coded (GET=green, POST=blue, DELETE=red, PUT=yellow, PATCH=cyan)
-- [ ] **DISP-03**: Status codes are color-coded (2xx=green, 4xx=yellow, 5xx=red)
-- [ ] **DISP-04**: Visual separation between log entries (borders, spacing, or alternating styles)
+- [x] **DISP-01**: Each request displays as a compact one-line row: timestamp, method, path, status code
+- [x] **DISP-02**: HTTP methods are color-coded (GET=green, POST=blue, DELETE=red, PUT=yellow, PATCH=cyan)
+- [x] **DISP-03**: Status codes are color-coded (2xx=green, 4xx=yellow, 5xx=red)
+- [x] **DISP-04**: Visual separation between log entries (borders, spacing, or alternating styles)
 
 ### Interaction
 
-- [ ] **INTR-01**: User can navigate entries with j/k or arrow keys
-- [ ] **INTR-02**: User can expand/collapse individual entries to see full detail (headers, body, client IP, response time)
-- [ ] **INTR-03**: User can clear all visible log entries with a keybind
-- [ ] **INTR-04**: Help footer displays available keybindings
+- [x] **INTR-01**: User can navigate entries with j/k or arrow keys
+- [x] **INTR-02**: User can expand/collapse individual entries to see full detail (headers, body, client IP, response time)
+- [x] **INTR-03**: User can clear all visible log entries with a keybind
+- [x] **INTR-04**: Help footer displays available keybindings
 
 ### Robustness
 
-- [ ] **ROBU-01**: TUI adapts to terminal resize events
+- [x] **ROBU-01**: TUI adapts to terminal resize events
+
+### Clipboard & Formatting
+
+- [x] **COPY-01**: User can press c to copy the selected request's body to clipboard
+- [x] **COPY-02**: User can press Shift+C to copy the full request to clipboard
+- [x] **COPY-03**: "Copied!" flash feedback shown after successful copy
+- [x] **COPY-04**: Empty body shows "No body to copy" flash message
+- [x] **COPY-05**: Flash auto-dismisses after ~2 seconds
+- [x] **FMT-01**: JSON bodies are auto-detected and displayed formatted with syntax highlighting
+- [x] **FMT-02**: User can press f to toggle between formatted and raw body display
+- [x] **FMT-03**: Body section label shows "(JSON)" or "(raw)" based on content and toggle state
+- [x] **FMT-04**: Syntax highlighting uses distinct colors for keys, strings, numbers, and booleans
+- [x] **KEY-01**: Clear is remapped to x only; c is now copy
+- [x] **KEY-02**: Shift+C copies full request details
 
 ## v2 Requirements
 
@@ -124,25 +138,36 @@ Deferred to future release. Tracked but not in current roadmap.
 | SRV-03 | Phase 1 | Complete |
 | QA-01 | Phase 1 | Complete |
 | QA-02 | Phase 1 | Complete |
-| TUI-01 | Phase 3 | Pending |
+| TUI-01 | Phase 3 | Complete |
 | TUI-02 | Phase 3 | Complete |
 | TUI-03 | Phase 3 | Complete |
-| DISP-01 | Phase 4 | Pending |
-| DISP-02 | Phase 4 | Pending |
-| DISP-03 | Phase 4 | Pending |
-| DISP-04 | Phase 4 | Pending |
-| INTR-01 | Phase 5 | Pending |
-| INTR-02 | Phase 5 | Pending |
-| INTR-03 | Phase 5 | Pending |
-| INTR-04 | Phase 5 | Pending |
-| ROBU-01 | Phase 5 | Pending |
+| DISP-01 | Phase 4 | Complete |
+| DISP-02 | Phase 4 | Complete |
+| DISP-03 | Phase 4 | Complete |
+| DISP-04 | Phase 4 | Complete |
+| INTR-01 | Phase 5 | Complete |
+| INTR-02 | Phase 5 | Complete |
+| INTR-03 | Phase 5 | Complete |
+| INTR-04 | Phase 5 | Complete |
+| ROBU-01 | Phase 5 | Complete |
+| COPY-01 | Phase 6 | Complete |
+| COPY-02 | Phase 6 | Complete |
+| COPY-03 | Phase 6 | Complete |
+| COPY-04 | Phase 6 | Complete |
+| COPY-05 | Phase 6 | Complete |
+| FMT-01 | Phase 6 | Complete |
+| FMT-02 | Phase 6 | Complete |
+| FMT-03 | Phase 6 | Complete |
+| FMT-04 | Phase 6 | Complete |
+| KEY-01 | Phase 6 | Complete |
+| KEY-02 | Phase 6 | Complete |
 
 **Coverage:**
 - v1.0 requirements: 14 total (all complete)
-- v1.1 requirements: 12 total
-- Mapped to phases: 12
+- v1.1 requirements: 23 total (12 original + 11 Phase 6)
+- Mapped to phases: 23
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-06*
-*Last updated: 2026-03-06 after v1.1 roadmap creation*
+*Last updated: 2026-03-09 after gap closure phase creation*
