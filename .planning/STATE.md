@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: null
 milestone_name: null
 status: planning
-stopped_at: Completed quick task 7
-last_updated: "2026-03-09T10:03:20Z"
-last_activity: 2026-03-09 - Completed quick task 7: Create an output folder to store binary and a separate output folder to store logs. Add both to .gitignore.
+stopped_at: Completed quick task 8
+last_updated: "2026-03-09T10:09:40Z"
+last_activity: 2026-03-09 - Completed quick task 8: Attach datetime to request logs, each time the program is started it should attach those to the logs so that there is a record of past logs when the program is stopped. Also don't use output folder, just put logs and binary folder output on the root.
 progress:
   total_phases: 7
   completed_phases: 7
@@ -36,8 +36,8 @@ Raw execution history for phases 03-07 lives under `.planning/milestones/v1.1-ph
 ### Decisions
 
 - Keep Bubble Tea on the main goroutine while HTTP serves in the background
-- Keep structured JSON logging in `output/logs/requests.log` while the TUI owns stdout
-- Keep generated binaries under `output/bin/` and generated logs under `output/logs/`
+- Keep structured JSON logging in per-start timestamped files under `logs/` while the TUI owns stdout
+- Keep generated binaries under `bin/` and generated logs under `logs/` at the repo root
 - Use compact rows plus inline expansion instead of split panes
 - Use OSC52 clipboard integration and default-formatted JSON bodies
 
@@ -56,6 +56,7 @@ Raw execution history for phases 03-07 lives under `.planning/milestones/v1.1-ph
 | 5 | Update CLAUDE.md, add README.md and MIT LICENSE | 2026-03-09 | 5689c04 | [5-update-claude-md-add-readme-md-and-add-m](./quick/5-update-claude-md-add-readme-md-and-add-m/) |
 | 6 | GitHub release v1.1.0 with cross-compiled binaries | 2026-03-09 | v1.1.0 | [6-add-github-release-with-go-binary-builds](./quick/6-add-github-release-with-go-binary-builds/) |
 | 7 | Create an output folder to store binary and a separate output folder to store logs. Add both to .gitignore. | 2026-03-09 | 85756ba | [7-create-an-output-folder-to-store-binary-](./quick/7-create-an-output-folder-to-store-binary-/) |
+| 8 | Attach datetime to request logs, each time the program is started it should attach those to the logs so that there is a record of past logs when the program is stopped. Also don't use output folder, just put logs and binary folder output on the root. | 2026-03-09 | af1e098 | [8-attach-datetime-to-request-logs-each-tim](./quick/8-attach-datetime-to-request-logs-each-tim/) |
 
 ### Next Suggested Actions
 
