@@ -5,7 +5,7 @@ milestone_name: TUI Log Viewer
 status: planning
 stopped_at: Phase 6 context gathered
 last_updated: "2026-03-09T08:11:58.405Z"
-last_activity: 2026-03-06 — Completed Phase 4 (Compact List with Styles)
+last_activity: 2026-03-09 - Completed quick task 3: Rename project to event-horizon
 progress:
   total_phases: 6
   completed_phases: 4
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 Phase: 5 of 5 (Interactive Features and Polish) — next phase in v1.1
 Plan: 0 planned
 Status: Ready to plan
-Last activity: 2026-03-06 — Completed Phase 4 (Compact List with Styles)
+Last activity: 2026-03-09 - Completed quick task 3: Rename project to event-horizon
 
 Progress: [#############░░░░░░░] 67% of v1.1 (2/3 phases)
 
