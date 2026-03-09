@@ -28,8 +28,8 @@ Or clone and build:
 ```bash
 git clone https://github.com/garyteofanus/event-horizon.git
 cd event-horizon
-go build -o output/bin/event-horizon .
-./output/bin/event-horizon
+go build -o bin/event-horizon .
+./bin/event-horizon
 ```
 
 Then in another terminal:
@@ -43,7 +43,7 @@ curl http://localhost:8080/hello
 | Variable   | Default        | Description                    |
 |------------|----------------|--------------------------------|
 | `PORT`     | `8080`         | HTTP listen port               |
-| `LOG_FILE` | `output/logs/requests.log` | Path to structured JSON log    |
+| `LOG_FILE` | `logs/requests-YYYYMMDD-HHMMSS.log` | Default is a new timestamped file each program start |
 
 ## Keybindings
 

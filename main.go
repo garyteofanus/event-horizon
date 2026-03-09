@@ -7,17 +7,22 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 )
 
-const defaultLogPath = "output/logs/requests.log"
+const defaultLogDir = "logs"
 
-func resolveLogPath() string {
+func defaultLogPath(startedAt time.Time) string {
+	return filepath.Join(defaultLogDir, fmt.Sprintf("requests-%s.log", startedAt.Format("20060102-150405")))
+}
+
+func resolveLogPath(startedAt time.Time) string {
 	if lf := os.Getenv("LOG_FILE"); lf != "" {
 		return lf
 	}
-	return defaultLogPath
+	return defaultLogPath(startedAt)
 }
 
 func openLogFile(path string) (*os.File, error) {
@@ -31,12 +36,14 @@ func openLogFile(path string) (*os.File, error) {
 }
 
 func main() {
+	startedAt := time.Now()
+
 	port := "8080"
 	if p := os.Getenv("PORT"); p != "" {
 		port = p
 	}
 
-	logPath := resolveLogPath()
+	logPath := resolveLogPath(startedAt)
 
 	logFile, err := openLogFile(logPath)
 	if err != nil {

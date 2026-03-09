@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 // setupTest creates a bytes.Buffer-backed slog logger and returns the buffer
@@ -312,15 +313,17 @@ func TestDualOutput(t *testing.T) {
 	}
 }
 
-// TestLogFilePathDefault verifies LOG_FILE defaults to output/logs/requests.log when unset (OUT-03).
+// TestLogFilePathDefault verifies LOG_FILE defaults to a timestamped logs path when unset (OUT-03).
 func TestLogFilePathDefault(t *testing.T) {
 	t.Setenv("LOG_FILE", "")
 	os.Unsetenv("LOG_FILE")
 
-	logPath := resolveLogPath()
+	startedAt := time.Date(2026, time.March, 9, 17, 0, 0, 0, time.UTC)
+	logPath := resolveLogPath(startedAt)
+	want := filepath.Join("logs", "requests-20260309-170000.log")
 
-	if logPath != defaultLogPath {
-		t.Errorf("expected default log path %q, got %q", defaultLogPath, logPath)
+	if logPath != want {
+		t.Errorf("expected default log path %q, got %q", want, logPath)
 	}
 }
 
@@ -328,7 +331,7 @@ func TestLogFilePathDefault(t *testing.T) {
 func TestLogFilePathCustom(t *testing.T) {
 	t.Setenv("LOG_FILE", "/tmp/custom.log")
 
-	logPath := resolveLogPath()
+	logPath := resolveLogPath(time.Date(2026, time.March, 9, 17, 0, 0, 0, time.UTC))
 
 	if logPath != "/tmp/custom.log" {
 		t.Errorf("expected log path '/tmp/custom.log', got %q", logPath)

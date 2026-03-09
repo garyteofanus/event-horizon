@@ -24,7 +24,7 @@ No other direct dependencies.
 ## Commands
 
 - **Run:** `go run .` (listens on `:8080` by default, override with `PORT` env var)
-- **Build:** `go build -o output/bin/event-horizon .`
+- **Build:** `go build -o bin/event-horizon .`
 - **Test:** `go test ./...`
 - **Test verbose:** `go test -v ./...`
 
@@ -40,7 +40,7 @@ No other direct dependencies.
 ## Environment Variables
 
 - `PORT` -- HTTP listen port (default `8080`)
-- `LOG_FILE` -- Path to structured JSON log file (default `output/logs/requests.log`)
+- `LOG_FILE` -- Path to structured JSON log file (default `logs/requests-YYYYMMDD-HHMMSS.log`)
 
 ## Public Access (cloudflared)
 

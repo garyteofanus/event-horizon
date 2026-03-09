@@ -1,4 +1,4 @@
-output/bin/*
-!output/bin/.gitkeep
-output/logs/*
-!output/logs/.gitkeep
+bin/*
+!bin/.gitkeep
+logs/*
+!logs/.gitkeep
