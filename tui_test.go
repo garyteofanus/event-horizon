@@ -682,6 +682,134 @@ func TestRenderViewViewportTracksExpandedBlockHeight(t *testing.T) {
 	}
 }
 
+func TestIsJSON(t *testing.T) {
+	tests := []struct {
+		input string
+		want  bool
+	}{
+		{`{"key":"val"}`, true},
+		{`[1,2,3]`, true},
+		{`not json`, false},
+		{``, false},
+		{`  `, false},
+	}
+	for _, tc := range tests {
+		if got := isJSON(tc.input); got != tc.want {
+			t.Errorf("isJSON(%q) = %v, want %v", tc.input, got, tc.want)
+		}
+	}
+}
+
+func TestPrettyJSON(t *testing.T) {
+	input := `{"a":1,"b":"c"}`
+	got := prettyJSON(input)
+	expected := "{\n  \"a\": 1,\n  \"b\": \"c\"\n}"
+	if got != expected {
+		t.Errorf("prettyJSON(%q) = %q, want %q", input, got, expected)
+	}
+}
+
+func TestPrettyJSONInvalid(t *testing.T) {
+	input := "not json"
+	got := prettyJSON(input)
+	if got != input {
+		t.Errorf("prettyJSON(%q) = %q, want original string", input, got)
+	}
+}
+
+func TestBodyLabel(t *testing.T) {
+	tests := []struct {
+		body     string
+		formatOn bool
+		want     string
+	}{
+		{`{"a":1}`, true, "Body (JSON)"},
+		{`{"a":1}`, false, "Body (raw)"},
+		{`plain text`, true, "Body (raw)"},
+		{`plain text`, false, "Body (raw)"},
+	}
+	for _, tc := range tests {
+		got := bodyLabel(tc.body, tc.formatOn)
+		if got != tc.want {
+			t.Errorf("bodyLabel(%q, %v) = %q, want %q", tc.body, tc.formatOn, got, tc.want)
+		}
+	}
+}
+
+func TestFormatToggle(t *testing.T) {
+	m := model{
+		requests:      []RequestData{{URI: "/test"}},
+		selectedIndex: 0,
+		expandedIndex: -1,
+		formatBody:    true,
+	}
+
+	result, _ := m.Update(tea.KeyPressMsg{Code: 'f'})
+	updated := result.(model)
+	if updated.formatBody != false {
+		t.Fatal("expected formatBody to toggle to false")
+	}
+
+	result, _ = updated.Update(tea.KeyPressMsg{Code: 'f'})
+	updated = result.(model)
+	if updated.formatBody != true {
+		t.Fatal("expected formatBody to toggle back to true")
+	}
+}
+
+func TestJSONFormat(t *testing.T) {
+	jsonBody := `{"name":"test","count":42}`
+	req := sampleRequest("/json")
+	req.Body = jsonBody
+
+	m := model{
+		requests:      []RequestData{req},
+		selectedIndex: 0,
+		expandedIndex: 0,
+		width:         80,
+		height:        30,
+		formatBody:    true,
+	}
+
+	view := stripANSI(renderView(m))
+	// When format is on and body is JSON, should show indented JSON
+	if !strings.Contains(view, "\"name\": \"test\"") {
+		t.Fatalf("expected formatted JSON in expanded view, got:\n%s", view)
+	}
+	if !strings.Contains(view, "Body (JSON)") {
+		t.Fatalf("expected 'Body (JSON)' label, got:\n%s", view)
+	}
+
+	// With format off, should show raw body
+	m.formatBody = false
+	view = stripANSI(renderView(m))
+	if !strings.Contains(view, jsonBody) {
+		t.Fatalf("expected raw JSON body when format off, got:\n%s", view)
+	}
+	if !strings.Contains(view, "Body (raw)") {
+		t.Fatalf("expected 'Body (raw)' label when format off, got:\n%s", view)
+	}
+}
+
+func TestFooterFormatState(t *testing.T) {
+	m := model{
+		port:       "8080",
+		logPath:    "requests.log",
+		formatBody: true,
+	}
+
+	footer := stripANSI(renderFooter(m))
+	if !strings.Contains(footer, "format: on") {
+		t.Fatalf("expected 'format: on' in footer, got:\n%s", footer)
+	}
+
+	m.formatBody = false
+	footer = stripANSI(renderFooter(m))
+	if !strings.Contains(footer, "format: off") {
+		t.Fatalf("expected 'format: off' in footer, got:\n%s", footer)
+	}
+}
+
 func TestRenderViewNarrowWidthDoesNotCorruptOutput(t *testing.T) {
 	req := sampleRequest("/narrow-width-check")
 	req.Body = strings.Repeat("abcdef", 6)
