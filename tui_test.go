@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"regexp"
 	"strings"
 	"testing"
@@ -20,9 +21,24 @@ func colorString(c any) string {
 	return fmt.Sprint(c)
 }
 
+func sampleRequest(uri string) RequestData {
+	return RequestData{
+		Timestamp:    time.Date(2026, 1, 1, 14, 32, 5, 0, time.UTC),
+		Method:       "POST",
+		URI:          uri,
+		Status:       200,
+		ResponseTime: 12 * time.Millisecond,
+		Headers: http.Header{
+			"X-Debug": []string{"yes"},
+		},
+		Body:     "hello world",
+		ClientIP: "203.0.113.5",
+	}
+}
+
 func TestModelUpdateRequestMsg(t *testing.T) {
 	ch := make(chan RequestData, 1)
-	m := model{reqCh: ch, port: "8080", logPath: "requests.log"}
+	m := model{reqCh: ch, port: "8080", logPath: "requests.log", expandedIndex: -1}
 
 	msg := requestMsg(RequestData{
 		Timestamp:    time.Now(),
@@ -47,7 +63,7 @@ func TestModelUpdateRequestMsg(t *testing.T) {
 }
 
 func TestModelUpdateQuit(t *testing.T) {
-	m := model{port: "8080", logPath: "requests.log"}
+	m := model{port: "8080", logPath: "requests.log", expandedIndex: -1}
 
 	// Test "q" key
 	msg := tea.KeyPressMsg{Code: 'q'}
@@ -190,7 +206,7 @@ func TestModelUpdateAppendPreservesSelection(t *testing.T) {
 }
 
 func TestModelViewEmpty(t *testing.T) {
-	m := model{port: "8080", logPath: "requests.log"}
+	m := model{port: "8080", logPath: "requests.log", expandedIndex: -1}
 	view := stripANSI(renderView(m))
 
 	if !strings.Contains(view, "Waiting for requests...") {
@@ -200,8 +216,10 @@ func TestModelViewEmpty(t *testing.T) {
 
 func TestModelViewWithRequests(t *testing.T) {
 	m := model{
-		port:    "8080",
-		logPath: "requests.log",
+		port:          "8080",
+		logPath:       "requests.log",
+		selectedIndex: 0,
+		expandedIndex: -1,
 		requests: []RequestData{
 			{
 				Timestamp:    time.Date(2026, 1, 1, 14, 32, 5, 0, time.UTC),
@@ -233,7 +251,7 @@ func TestModelViewWithRequests(t *testing.T) {
 }
 
 func TestModelViewHeader(t *testing.T) {
-	m := model{port: "9090", logPath: "/tmp/test.log"}
+	m := model{port: "9090", logPath: "/tmp/test.log", expandedIndex: -1}
 	view := stripANSI(renderView(m))
 
 	if !strings.Contains(view, "blackhole :9090 -> /tmp/test.log") {
@@ -248,7 +266,7 @@ func TestRenderRequestRowContainsCompactFields(t *testing.T) {
 		URI:          "/api/users?page=1",
 		Status:       200,
 		ResponseTime: 2 * time.Millisecond,
-	}, 0, 80))
+	}, 0, 80, false))
 
 	if !strings.Contains(row, "14:32:05 GET /api/users?page=1 200 2ms") {
 		t.Fatalf("expected compact one-line row, got %q", row)
@@ -324,8 +342,10 @@ func TestStatusStylesRenderANSI(t *testing.T) {
 
 func TestRenderViewSeparatesAdjacentRows(t *testing.T) {
 	m := model{
-		port:    "8080",
-		logPath: "requests.log",
+		port:          "8080",
+		logPath:       "requests.log",
+		selectedIndex: 0,
+		expandedIndex: -1,
 		requests: []RequestData{
 			{
 				Timestamp:    time.Date(2026, 1, 1, 14, 32, 5, 0, time.UTC),
@@ -352,8 +372,10 @@ func TestRenderViewSeparatesAdjacentRows(t *testing.T) {
 
 func TestRenderViewPreservesBottomAppendOrder(t *testing.T) {
 	m := model{
-		port:    "8080",
-		logPath: "requests.log",
+		port:          "8080",
+		logPath:       "requests.log",
+		selectedIndex: 0,
+		expandedIndex: -1,
 		requests: []RequestData{
 			{
 				Timestamp:    time.Date(2026, 1, 1, 14, 32, 5, 0, time.UTC),
@@ -393,17 +415,157 @@ func TestRenderViewAutoScrollStillShowsMostRecentRows(t *testing.T) {
 	}
 
 	m := model{
-		port:     "8080",
-		logPath:  "requests.log",
-		requests: requests,
-		height:   6,
+		port:          "8080",
+		logPath:       "requests.log",
+		requests:      requests,
+		selectedIndex: 4,
+		expandedIndex: -1,
+		height:        6,
 	}
 
 	view := stripANSI(renderView(m))
 	if strings.Contains(view, "/req-0") || strings.Contains(view, "/req-1") {
 		t.Fatalf("expected oldest requests to be clipped, got:\n%s", view)
 	}
-	if !strings.Contains(view, "/req-3") || !strings.Contains(view, "/req-4") {
-		t.Fatalf("expected newest requests to remain visible, got:\n%s", view)
+	if !strings.Contains(view, "/req-4") {
+		t.Fatalf("expected newest selected request to remain visible, got:\n%s", view)
+	}
+}
+
+func TestRenderViewShowsHelpFooter(t *testing.T) {
+	m := model{port: "8080", logPath: "requests.log", expandedIndex: -1}
+	view := stripANSI(renderView(m))
+
+	if !strings.Contains(view, "q quit") {
+		t.Fatalf("expected footer to show quit help, got:\n%s", view)
+	}
+	if !strings.Contains(view, "j/k") || !strings.Contains(view, "enter/space") || !strings.Contains(view, "c/x") {
+		t.Fatalf("expected footer to show navigation, expand, and clear keys, got:\n%s", view)
+	}
+}
+
+func TestRenderViewExpandedRequestShowsDetails(t *testing.T) {
+	m := model{
+		port:          "8080",
+		logPath:       "requests.log",
+		requests:      []RequestData{sampleRequest("/expanded")},
+		selectedIndex: 0,
+		expandedIndex: 0,
+		width:         80,
+		height:        20,
+	}
+
+	view := stripANSI(renderView(m))
+	for _, want := range []string{"Headers", "Body", "Client IP", "Response Time", "X-Debug: yes", "hello world", "203.0.113.5", "12ms"} {
+		if !strings.Contains(view, want) {
+			t.Fatalf("expected expanded view to contain %q, got:\n%s", want, view)
+		}
+	}
+}
+
+func TestRenderViewSelectionIsVisible(t *testing.T) {
+	requests := make([]RequestData, 0, 6)
+	for i := 0; i < 6; i++ {
+		requests = append(requests, sampleRequest(fmt.Sprintf("/req-%d", i)))
+	}
+
+	m := model{
+		port:          "8080",
+		logPath:       "requests.log",
+		requests:      requests,
+		selectedIndex: 4,
+		width:         80,
+		height:        8,
+	}
+
+	view := stripANSI(renderView(m))
+	if !strings.Contains(view, "/req-4") {
+		t.Fatalf("expected selected row to remain visible, got:\n%s", view)
+	}
+}
+
+func TestRenderViewClearStateStillShowsFooter(t *testing.T) {
+	m := model{
+		port:          "8080",
+		logPath:       "requests.log",
+		selectedIndex: 0,
+		expandedIndex: -1,
+	}
+
+	view := stripANSI(renderView(m))
+	if !strings.Contains(view, "Waiting for requests...") {
+		t.Fatalf("expected empty state after clear, got:\n%s", view)
+	}
+	if !strings.Contains(view, "q quit") {
+		t.Fatalf("expected footer to remain visible after clear, got:\n%s", view)
+	}
+}
+
+func TestRenderViewResizeKeepsLayoutIntact(t *testing.T) {
+	m := model{
+		port:          "8080",
+		logPath:       "requests.log",
+		requests:      []RequestData{sampleRequest("/resize")},
+		selectedIndex: 0,
+		expandedIndex: 0,
+		width:         32,
+		height:        10,
+	}
+
+	view := stripANSI(renderView(m))
+	if strings.Count(view, "blackhole :8080 -> requests.log") != 1 {
+		t.Fatalf("expected single header render, got:\n%s", view)
+	}
+	if !strings.Contains(view, "1 request") {
+		t.Fatalf("expected footer status to remain intact, got:\n%s", view)
+	}
+}
+
+func TestRenderViewViewportTracksExpandedBlockHeight(t *testing.T) {
+	requests := []RequestData{
+		sampleRequest("/req-0"),
+		sampleRequest("/req-1"),
+		sampleRequest("/req-2"),
+		sampleRequest("/req-3"),
+	}
+
+	m := model{
+		port:          "8080",
+		logPath:       "requests.log",
+		requests:      requests,
+		selectedIndex: 2,
+		expandedIndex: 2,
+		width:         60,
+		height:        9,
+	}
+
+	view := stripANSI(renderView(m))
+	if !strings.Contains(view, "/req-2") {
+		t.Fatalf("expected selected expanded request to stay visible, got:\n%s", view)
+	}
+	if strings.Contains(view, "/req-0") && strings.Contains(view, "/req-3") {
+		t.Fatalf("expected viewport to clip at least one edge when expanded block consumes height, got:\n%s", view)
+	}
+}
+
+func TestRenderViewNarrowWidthDoesNotCorruptOutput(t *testing.T) {
+	req := sampleRequest("/narrow-width-check")
+	req.Body = strings.Repeat("abcdef", 6)
+	m := model{
+		port:          "8080",
+		logPath:       "requests.log",
+		requests:      []RequestData{req},
+		selectedIndex: 0,
+		expandedIndex: 0,
+		width:         24,
+		height:        12,
+	}
+
+	view := stripANSI(renderView(m))
+	if !strings.Contains(view, "Headers") || !strings.Contains(view, "Body") {
+		t.Fatalf("expected narrow render to keep detail sections, got:\n%s", view)
+	}
+	if !strings.Contains(view, "q quit") {
+		t.Fatalf("expected narrow render to keep footer, got:\n%s", view)
 	}
 }
