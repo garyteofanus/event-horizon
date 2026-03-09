@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log/slog"
 	"net"
@@ -77,24 +76,4 @@ func handleRequest(logger *slog.Logger, reqCh chan<- RequestData) http.HandlerFu
 		}
 		// Empty 200 OK -- do not write to w
 	}
-}
-
-// formatRequestLine formats a RequestData into a human-readable line:
-// "HH:MM:SS METHOD /path STATUS TIMEms"
-func formatRequestLine(d RequestData) string {
-	ts := d.Timestamp.Format("15:04:05")
-
-	uri := d.URI
-	if len(uri) > 40 {
-		uri = uri[:37] + "..."
-	}
-
-	var timing string
-	if d.ResponseTime < time.Millisecond {
-		timing = "<1ms"
-	} else {
-		timing = fmt.Sprintf("%dms", d.ResponseTime.Milliseconds())
-	}
-
-	return fmt.Sprintf("%s %s %s %d %s", ts, d.Method, uri, d.Status, timing)
 }
