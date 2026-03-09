@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -282,19 +283,38 @@ func renderExpandedDetails(r RequestData, width int, formatBody bool) string {
 	innerWidth := maxInt(width-4, 20)
 
 	// Determine body content and label
-	body := blankFallback(r.Body)
 	label := bodyLabel(r.Body, formatBody)
+	var bodySection string
 	if formatBody && isJSON(r.Body) {
-		body = prettyJSON(r.Body)
+		bodySection = renderHighlightedBodySection(label, prettyJSON(r.Body), innerWidth)
+	} else {
+		bodySection = renderDetailSection(label, blankFallback(r.Body), innerWidth)
 	}
 
 	sections := []string{
 		renderDetailSection("Headers", formatHeaders(r.Headers), innerWidth),
-		renderDetailSection(label, body, innerWidth),
+		bodySection,
 		renderDetailSection("Client IP", blankFallback(r.ClientIP), innerWidth),
 		renderDetailSection("Response Time", formatResponseTime(r.ResponseTime), innerWidth),
 	}
 	return strings.Join(sections, "\n")
+}
+
+func renderHighlightedBodySection(label, value string, width int) string {
+	lines := wrapText(value, width)
+	if len(lines) == 0 {
+		lines = []string{"-"}
+	}
+
+	var b strings.Builder
+	b.WriteString(detailLabelStyle.Render(label))
+	b.WriteString("\n")
+	for _, line := range lines {
+		b.WriteString("  ")
+		b.WriteString(highlightJSONLine(line))
+		b.WriteString("\n")
+	}
+	return strings.TrimRight(b.String(), "\n")
 }
 
 func renderDetailSection(label, value string, width int) string {
@@ -368,6 +388,90 @@ func bodyLabel(body string, formatOn bool) string {
 		return "Body (JSON)"
 	}
 	return "Body (raw)"
+}
+
+var (
+	jsonKeyStyle    = lipgloss.NewStyle().Foreground(colorCyan)
+	jsonStringStyle = lipgloss.NewStyle().Foreground(colorGreen)
+	jsonNumberStyle = lipgloss.NewStyle().Foreground(colorYellow)
+	jsonBoolStyle   = lipgloss.NewStyle().Foreground(colorBlue)
+	jsonNullStyle   = lipgloss.NewStyle().Foreground(colorMuted)
+	jsonBraceStyle  = lipgloss.NewStyle().Foreground(colorNeutral)
+)
+
+// jsonTokenRe matches JSON tokens in pretty-printed output.
+var jsonTokenRe = regexp.MustCompile(`("(?:[^"\\]|\\.)*")\s*:|("(?:[^"\\]|\\.)*")|(-?[0-9]+\.?[0-9]*(?:[eE][+-]?[0-9]+)?)|(\btrue\b|\bfalse\b)|(\bnull\b)|([{}\[\],:])|(\s+)`)
+
+func highlightJSON(pretty string) string {
+	lines := strings.Split(pretty, "\n")
+	for i, line := range lines {
+		lines[i] = highlightJSONLine(line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func highlightJSONLine(line string) string {
+	if strings.TrimSpace(line) == "" {
+		return line
+	}
+
+	var result strings.Builder
+
+	// Preserve leading whitespace
+	trimmed := strings.TrimLeft(line, " \t")
+	leading := line[:len(line)-len(trimmed)]
+	result.WriteString(leading)
+
+	// Tokenize and highlight
+	remaining := trimmed
+	for len(remaining) > 0 {
+		loc := jsonTokenRe.FindStringSubmatchIndex(remaining)
+		if loc == nil || loc[0] != 0 {
+			// No match at start -- write one char and advance
+			if loc == nil {
+				result.WriteString(remaining)
+				break
+			}
+			result.WriteString(remaining[:loc[0]])
+			remaining = remaining[loc[0]:]
+			continue
+		}
+
+		fullMatch := remaining[loc[0]:loc[1]]
+
+		switch {
+		case loc[2] >= 0: // Group 1: key (string followed by colon)
+			key := remaining[loc[2]:loc[3]]
+			// fullMatch includes "key": -- render key styled, then the rest (whitespace + colon)
+			after := fullMatch[len(key):]
+			result.WriteString(jsonKeyStyle.Render(key))
+			result.WriteString(jsonBraceStyle.Render(after))
+		case loc[4] >= 0: // Group 2: string value
+			str := remaining[loc[4]:loc[5]]
+			result.WriteString(jsonStringStyle.Render(str))
+		case loc[6] >= 0: // Group 3: number
+			num := remaining[loc[6]:loc[7]]
+			result.WriteString(jsonNumberStyle.Render(num))
+		case loc[8] >= 0: // Group 4: bool
+			b := remaining[loc[8]:loc[9]]
+			result.WriteString(jsonBoolStyle.Render(b))
+		case loc[10] >= 0: // Group 5: null
+			n := remaining[loc[10]:loc[11]]
+			result.WriteString(jsonNullStyle.Render(n))
+		case loc[12] >= 0: // Group 6: structural chars
+			ch := remaining[loc[12]:loc[13]]
+			result.WriteString(jsonBraceStyle.Render(ch))
+		case loc[14] >= 0: // Group 7: whitespace
+			ws := remaining[loc[14]:loc[15]]
+			result.WriteString(ws)
+		default:
+			result.WriteString(fullMatch)
+		}
+
+		remaining = remaining[loc[1]:]
+	}
+
+	return result.String()
 }
 
 func renderRequestBlock(r RequestData, index int, m model, width int) string {
