@@ -4,8 +4,8 @@ milestone: v1.1
 milestone_name: TUI Log Viewer
 status: completed
 stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-03-09T08:34:18.917Z"
-last_activity: 2026-03-09 - Completed 06-02 JSON formatting and syntax highlighting
+last_updated: "2026-03-09T08:47:46Z"
+last_activity: 2026-03-09 - Completed quick task 5: Update CLAUDE.md, add README.md and MIT LICENSE
 progress:
   total_phases: 6
   completed_phases: 5
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 Phase: 6 of 6 (Copy Request Body and Format Body in Expanded View)
 Plan: 2 of 2
 Status: Phase Complete
-Last activity: 2026-03-09 - Completed quick task 4: Create GitHub repo on garyteofanus account and push
+Last activity: 2026-03-09 - Completed quick task 5: Update CLAUDE.md, add README.md and MIT LICENSE
 
 Progress: [██████████] 100% of v1.1 (8/8 plans)
 
@@ -82,6 +82,7 @@ Recent decisions affecting current work:
 - [Phase 06]: Regex tokenizer for JSON highlighting -- json.Indent output is predictable enough for simple regex
 - [Phase 06]: Highlighting applied AFTER wrapText to prevent ANSI codes corrupting width calculations
 - [Phase 06]: formatBody defaults to true so JSON is formatted by default
+- [Quick-5]: Used `go run .` instead of `go run main.go` in CLAUDE.md since project is multi-file
 
 ### Pending Todos
 
@@ -103,9 +104,10 @@ None yet.
 | 2 | Rename folder and Go module to blackhole-server | 2026-03-06 | 7837a56 | [2-rename-folder-and-go-module-to-blackhole](./quick/2-rename-folder-and-go-module-to-blackhole/) |
 | 3 | Rename project to event-horizon | 2026-03-09 | 9f70bfb | [3-rename-project-to-a-clever-mythological-](./quick/3-rename-project-to-a-clever-mythological-/) |
 | 4 | Create GitHub repo on garyteofanus account and push | 2026-03-09 | 0e52029 | [4-create-github-repo-on-garyteofanus-accou](./quick/4-create-github-repo-on-garyteofanus-accou/) |
+| 5 | Update CLAUDE.md, add README.md and MIT LICENSE | 2026-03-09 | 5689c04 | [5-update-claude-md-add-readme-md-and-add-m](./quick/5-update-claude-md-add-readme-md-and-add-m/) |
 
 ## Session Continuity
 
-Last session: 2026-03-09T08:37:26Z
-Stopped at: Completed quick task 4 (GitHub repo creation)
+Last session: 2026-03-09T08:47:46Z
+Stopped at: Completed quick task 5 (CLAUDE.md, README.md, LICENSE)
 Resume file: None
