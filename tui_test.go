@@ -154,19 +154,20 @@ func TestModelUpdateToggleExpand(t *testing.T) {
 	}
 }
 
-func TestModelUpdateClearRequests(t *testing.T) {
+func TestClearOnlyX(t *testing.T) {
 	m := model{
-		requests:       []RequestData{{URI: "/one"}, {URI: "/two"}},
+		requests:       []RequestData{{URI: "/one", Body: "data"}, {URI: "/two"}},
 		selectedIndex:  1,
 		expandedIndex:  1,
 		scrollOffset:   3,
 	}
 
-	result, _ := m.Update(tea.KeyPressMsg{Code: 'c'})
+	// 'x' should still clear
+	result, _ := m.Update(tea.KeyPressMsg{Code: 'x'})
 	updated := result.(model)
 
 	if len(updated.requests) != 0 {
-		t.Fatalf("expected requests to be cleared, got %d", len(updated.requests))
+		t.Fatalf("expected requests to be cleared by x, got %d", len(updated.requests))
 	}
 	if updated.selectedIndex != 0 {
 		t.Fatalf("expected selectedIndex reset to 0, got %d", updated.selectedIndex)
@@ -176,6 +177,130 @@ func TestModelUpdateClearRequests(t *testing.T) {
 	}
 	if updated.scrollOffset != 0 {
 		t.Fatalf("expected scrollOffset reset to 0, got %d", updated.scrollOffset)
+	}
+
+	// 'c' should NOT clear requests (it copies instead)
+	m2 := model{
+		requests:      []RequestData{{URI: "/one", Body: "data"}, {URI: "/two"}},
+		selectedIndex: 0,
+		expandedIndex: -1,
+	}
+	result2, _ := m2.Update(tea.KeyPressMsg{Code: 'c'})
+	updated2 := result2.(model)
+	if len(updated2.requests) != 2 {
+		t.Fatalf("expected 'c' NOT to clear requests, got %d", len(updated2.requests))
+	}
+}
+
+func TestCopyBody(t *testing.T) {
+	m := model{
+		requests:      []RequestData{{URI: "/test", Body: "hello world"}},
+		selectedIndex: 0,
+		expandedIndex: -1,
+	}
+
+	result, cmd := m.Update(tea.KeyPressMsg{Code: 'c'})
+	updated := result.(model)
+
+	if cmd == nil {
+		t.Fatal("expected non-nil cmd (clipboard + tick)")
+	}
+	if updated.flashMessage != "Copied!" {
+		t.Fatalf("expected flash 'Copied!', got %q", updated.flashMessage)
+	}
+}
+
+func TestCopyBodyNoBody(t *testing.T) {
+	m := model{
+		requests:      []RequestData{{URI: "/test", Body: ""}},
+		selectedIndex: 0,
+		expandedIndex: -1,
+	}
+
+	result, cmd := m.Update(tea.KeyPressMsg{Code: 'c'})
+	updated := result.(model)
+
+	if cmd == nil {
+		t.Fatal("expected non-nil cmd (tick for flash)")
+	}
+	if updated.flashMessage != "No body to copy" {
+		t.Fatalf("expected flash 'No body to copy', got %q", updated.flashMessage)
+	}
+}
+
+func TestCopyFull(t *testing.T) {
+	m := model{
+		requests: []RequestData{sampleRequest("/full")},
+		selectedIndex: 0,
+		expandedIndex: -1,
+	}
+
+	// Shift+C: Text is "C", Code is 'c', Mod has ModShift
+	result, cmd := m.Update(tea.KeyPressMsg{Code: 'c', Text: "C", Mod: tea.ModShift})
+	updated := result.(model)
+
+	if cmd == nil {
+		t.Fatal("expected non-nil cmd (clipboard + tick)")
+	}
+	if updated.flashMessage != "Copied!" {
+		t.Fatalf("expected flash 'Copied!', got %q", updated.flashMessage)
+	}
+}
+
+func TestCopyFullNoRequests(t *testing.T) {
+	m := model{
+		requests:      nil,
+		selectedIndex: 0,
+		expandedIndex: -1,
+	}
+
+	// 'c' with no requests is a no-op
+	result, cmd := m.Update(tea.KeyPressMsg{Code: 'c'})
+	updated := result.(model)
+	if cmd != nil {
+		t.Fatal("expected nil cmd when no requests")
+	}
+	if updated.flashMessage != "" {
+		t.Fatalf("expected no flash, got %q", updated.flashMessage)
+	}
+
+	// Shift+C with no requests is a no-op
+	result2, cmd2 := m.Update(tea.KeyPressMsg{Code: 'c', Text: "C", Mod: tea.ModShift})
+	updated2 := result2.(model)
+	if cmd2 != nil {
+		t.Fatal("expected nil cmd for Shift+C with no requests")
+	}
+	if updated2.flashMessage != "" {
+		t.Fatalf("expected no flash for Shift+C with no requests, got %q", updated2.flashMessage)
+	}
+}
+
+func TestFlashExpires(t *testing.T) {
+	m := model{
+		flashMessage: "Copied!",
+	}
+
+	result, cmd := m.Update(flashExpiredMsg{})
+	updated := result.(model)
+
+	if updated.flashMessage != "" {
+		t.Fatalf("expected flash to be cleared, got %q", updated.flashMessage)
+	}
+	if cmd != nil {
+		t.Fatal("expected nil cmd after flash expiry")
+	}
+}
+
+func TestFooterShowsFlash(t *testing.T) {
+	m := model{
+		port:         "8080",
+		logPath:      "requests.log",
+		flashMessage: "Copied!",
+	}
+
+	footer := stripANSI(renderFooter(m))
+	if !strings.Contains(footer, "Copied!") {
+		t.Fatalf("expected footer to contain flash message, got:\n%s", footer)
 	}
 }
 
@@ -439,8 +564,17 @@ func TestRenderViewShowsHelpFooter(t *testing.T) {
 	if !strings.Contains(view, "q quit") {
 		t.Fatalf("expected footer to show quit help, got:\n%s", view)
 	}
-	if !strings.Contains(view, "j/k") || !strings.Contains(view, "enter/space") || !strings.Contains(view, "c/x") {
-		t.Fatalf("expected footer to show navigation, expand, and clear keys, got:\n%s", view)
+	if !strings.Contains(view, "j/k") || !strings.Contains(view, "enter/space") {
+		t.Fatalf("expected footer to show navigation and expand keys, got:\n%s", view)
+	}
+	if !strings.Contains(view, "c copy") {
+		t.Fatalf("expected footer to show 'c copy', got:\n%s", view)
+	}
+	if !strings.Contains(view, "C copy all") {
+		t.Fatalf("expected footer to show 'C copy all', got:\n%s", view)
+	}
+	if !strings.Contains(view, "x clear") {
+		t.Fatalf("expected footer to show 'x clear', got:\n%s", view)
 	}
 }
 
