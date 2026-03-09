@@ -14,6 +14,9 @@ import (
 // requestMsg is the tea.Msg type for channel messages carrying request data.
 type requestMsg RequestData
 
+// flashExpiredMsg signals that the flash message should be cleared.
+type flashExpiredMsg struct{}
+
 // waitForRequest returns a tea.Cmd that blocks on the channel until a request arrives.
 func waitForRequest(ch <-chan RequestData) tea.Cmd {
 	return func() tea.Msg {
@@ -32,6 +35,7 @@ type model struct {
 	selectedIndex  int
 	expandedIndex  int
 	scrollOffset   int
+	flashMessage   string
 }
 
 func (m model) Init() tea.Cmd {
@@ -69,12 +73,33 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.scrollOffset = clampScrollOffset(m.scrollOffset, len(m.requests))
 			return m, nil
-		case "x", "c":
+		case "x":
 			m.requests = nil
 			m.selectedIndex = 0
 			m.expandedIndex = -1
 			m.scrollOffset = 0
 			return m, nil
+		case "c":
+			if len(m.requests) == 0 {
+				return m, nil
+			}
+			r := m.requests[clampIndex(m.selectedIndex, len(m.requests))]
+			tickCmd := tea.Tick(2*time.Second, func(t time.Time) tea.Msg { return flashExpiredMsg{} })
+			if strings.TrimSpace(r.Body) == "" {
+				m.flashMessage = "No body to copy"
+				return m, tickCmd
+			}
+			m.flashMessage = "Copied!"
+			return m, tea.Batch(tea.SetClipboard(r.Body), tickCmd)
+		case "C":
+			if len(m.requests) == 0 {
+				return m, nil
+			}
+			r := m.requests[clampIndex(m.selectedIndex, len(m.requests))]
+			fullText := formatFullRequest(r)
+			m.flashMessage = "Copied!"
+			tickCmd := tea.Tick(2*time.Second, func(t time.Time) tea.Msg { return flashExpiredMsg{} })
+			return m, tea.Batch(tea.SetClipboard(fullText), tickCmd)
 		}
 	case requestMsg:
 		m.requests = append(m.requests, RequestData(msg))
@@ -87,6 +112,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.scrollOffset = clampScrollOffset(m.scrollOffset, len(m.requests))
 		return m, waitForRequest(m.reqCh)
+	case flashExpiredMsg:
+		m.flashMessage = ""
+		return m, nil
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
@@ -290,6 +318,18 @@ func formatHeaders(headers http.Header) string {
 	return strings.Join(lines, "\n")
 }
 
+func formatFullRequest(r RequestData) string {
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("%s %s\n", r.Method, r.URI))
+	b.WriteString(fmt.Sprintf("Client IP: %s\n", blankFallback(r.ClientIP)))
+	b.WriteString(fmt.Sprintf("Response Time: %s\n", formatResponseTime(r.ResponseTime)))
+	b.WriteString(fmt.Sprintf("\nHeaders:\n%s\n", formatHeaders(r.Headers)))
+	if strings.TrimSpace(r.Body) != "" {
+		b.WriteString(fmt.Sprintf("\nBody:\n%s", r.Body))
+	}
+	return b.String()
+}
+
 func blankFallback(value string) string {
 	if strings.TrimSpace(value) == "" {
 		return "-"
@@ -371,7 +411,10 @@ func renderFooter(m model) string {
 	}
 
 	status := fmt.Sprintf("%d requests | selected %d/%d", len(m.requests), selected, len(m.requests))
-	help := "j/k or arrows move | enter/space expand | c/x clear | q quit"
+	if m.flashMessage != "" {
+		status += " | " + m.flashMessage
+	}
+	help := "j/k or arrows move | enter/space expand | c copy | C copy all | x clear | q quit"
 	return footerStyle.Render(status) + "\n" + footerStyle.Render(help)
 }
 
