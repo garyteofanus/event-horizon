@@ -254,8 +254,8 @@ func TestModelViewHeader(t *testing.T) {
 	m := model{port: "9090", logPath: "/tmp/test.log", expandedIndex: -1}
 	view := stripANSI(renderView(m))
 
-	if !strings.Contains(view, "blackhole :9090 -> /tmp/test.log") {
-		t.Errorf("view should contain header 'blackhole :9090 -> /tmp/test.log', got:\n%s", view)
+	if !strings.Contains(view, "event-horizon :9090 -> /tmp/test.log") {
+		t.Errorf("view should contain header 'event-horizon :9090 -> /tmp/test.log', got:\n%s", view)
 	}
 }
 
@@ -513,7 +513,7 @@ func TestRenderViewResizeKeepsLayoutIntact(t *testing.T) {
 	}
 
 	view := stripANSI(renderView(m))
-	if strings.Count(view, "blackhole :8080 -> requests.log") != 1 {
+	if strings.Count(view, "event-horizon :8080 -> requests.log") != 1 {
 		t.Fatalf("expected single header render, got:\n%s", view)
 	}
 	if !strings.Contains(view, "1 request") {

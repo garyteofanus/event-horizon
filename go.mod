@@ -1,4 +1,4 @@
-module blackhole-server
+module event-horizon
 
 go 1.25.0
 

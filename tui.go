@@ -416,7 +416,7 @@ func renderView(m model) string {
 	var s strings.Builder
 
 	// Header bar
-	s.WriteString(headerStyle.Render(fmt.Sprintf("blackhole :%s -> %s", m.port, m.logPath)))
+	s.WriteString(headerStyle.Render(fmt.Sprintf("event-horizon :%s -> %s", m.port, m.logPath)))
 	s.WriteString("\n")
 
 	// Separator
