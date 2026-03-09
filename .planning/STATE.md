@@ -94,6 +94,7 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 1 | Use cloudflared to run this service to public | 2026-03-06 | 07e94e5 | [1-use-cloudflared-to-run-this-service-to-p](./quick/1-use-cloudflared-to-run-this-service-to-p/) |
 | 2 | Rename folder and Go module to blackhole-server | 2026-03-06 | 7837a56 | [2-rename-folder-and-go-module-to-blackhole](./quick/2-rename-folder-and-go-module-to-blackhole/) |
+| 3 | Rename project to event-horizon | 2026-03-09 | 9f70bfb | [3-rename-project-to-a-clever-mythological-](./quick/3-rename-project-to-a-clever-mythological-/) |
 
 ## Session Continuity
 
