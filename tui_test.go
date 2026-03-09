@@ -810,6 +810,105 @@ func TestFooterFormatState(t *testing.T) {
 	}
 }
 
+func TestHighlightJSONKeys(t *testing.T) {
+	input := prettyJSON(`{"key": "val"}`)
+	highlighted := highlightJSON(input)
+	// "key" should have cyan ANSI codes
+	if !strings.Contains(highlighted, "\x1b[") {
+		t.Fatal("expected ANSI codes in highlighted output")
+	}
+	// The key should be styled with cyan
+	cyanCode := jsonKeyStyle.Render("\"key\"")
+	if !strings.Contains(highlighted, cyanCode) {
+		t.Fatalf("expected cyan-styled key in output, got:\n%s", highlighted)
+	}
+}
+
+func TestHighlightJSONStrings(t *testing.T) {
+	input := prettyJSON(`{"k": "hello"}`)
+	highlighted := highlightJSON(input)
+	greenRendered := jsonStringStyle.Render("\"hello\"")
+	if !strings.Contains(highlighted, greenRendered) {
+		t.Fatalf("expected green-styled string value, got:\n%s", highlighted)
+	}
+}
+
+func TestHighlightJSONNumbers(t *testing.T) {
+	input := prettyJSON(`{"n": 42}`)
+	highlighted := highlightJSON(input)
+	yellowRendered := jsonNumberStyle.Render("42")
+	if !strings.Contains(highlighted, yellowRendered) {
+		t.Fatalf("expected yellow-styled number, got:\n%s", highlighted)
+	}
+}
+
+func TestHighlightJSONBools(t *testing.T) {
+	input := prettyJSON(`{"b": true}`)
+	highlighted := highlightJSON(input)
+	blueRendered := jsonBoolStyle.Render("true")
+	if !strings.Contains(highlighted, blueRendered) {
+		t.Fatalf("expected blue-styled bool, got:\n%s", highlighted)
+	}
+}
+
+func TestHighlightJSONNull(t *testing.T) {
+	input := prettyJSON(`{"n": null}`)
+	highlighted := highlightJSON(input)
+	mutedRendered := jsonNullStyle.Render("null")
+	if !strings.Contains(highlighted, mutedRendered) {
+		t.Fatalf("expected muted-styled null, got:\n%s", highlighted)
+	}
+}
+
+func TestHighlightJSONBraces(t *testing.T) {
+	input := prettyJSON(`{"a": [1]}`)
+	highlighted := highlightJSON(input)
+	braceRendered := jsonBraceStyle.Render("{")
+	if !strings.Contains(highlighted, braceRendered) {
+		t.Fatalf("expected neutral-styled brace, got:\n%s", highlighted)
+	}
+	bracketRendered := jsonBraceStyle.Render("[")
+	if !strings.Contains(highlighted, bracketRendered) {
+		t.Fatalf("expected neutral-styled bracket, got:\n%s", highlighted)
+	}
+}
+
+func TestHighlightPreservesStructure(t *testing.T) {
+	input := `{"name":"test","count":42,"active":true,"data":null,"items":[1,2]}`
+	pretty := prettyJSON(input)
+	highlighted := highlightJSON(pretty)
+	stripped := stripANSI(highlighted)
+	if stripped != pretty {
+		t.Fatalf("stripped highlighted JSON should equal pretty-printed JSON.\nGot:\n%s\nWant:\n%s", stripped, pretty)
+	}
+}
+
+func TestHighlightIntegrationWithExpandedView(t *testing.T) {
+	jsonBody := `{"name":"test","count":42}`
+	req := sampleRequest("/highlight")
+	req.Body = jsonBody
+
+	m := model{
+		requests:      []RequestData{req},
+		selectedIndex: 0,
+		expandedIndex: 0,
+		width:         80,
+		height:        30,
+		formatBody:    true,
+	}
+
+	view := renderView(m)
+	// Should contain ANSI codes (highlighting)
+	if !strings.Contains(view, "\x1b[") {
+		t.Fatalf("expected ANSI codes in highlighted expanded view")
+	}
+	// Stripping ANSI should still show the formatted JSON content
+	stripped := stripANSI(view)
+	if !strings.Contains(stripped, "\"name\": \"test\"") {
+		t.Fatalf("expected formatted JSON content after stripping ANSI, got:\n%s", stripped)
+	}
+}
+
 func TestRenderViewNarrowWidthDoesNotCorruptOutput(t *testing.T) {
 	req := sampleRequest("/narrow-width-check")
 	req.Body = strings.Repeat("abcdef", 6)
