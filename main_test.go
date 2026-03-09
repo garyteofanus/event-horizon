@@ -312,18 +312,15 @@ func TestDualOutput(t *testing.T) {
 	}
 }
 
-// TestLogFilePathDefault verifies LOG_FILE defaults to "requests.log" when unset (OUT-03).
+// TestLogFilePathDefault verifies LOG_FILE defaults to output/logs/requests.log when unset (OUT-03).
 func TestLogFilePathDefault(t *testing.T) {
 	t.Setenv("LOG_FILE", "")
 	os.Unsetenv("LOG_FILE")
 
-	logPath := "requests.log"
-	if lf := os.Getenv("LOG_FILE"); lf != "" {
-		logPath = lf
-	}
+	logPath := resolveLogPath()
 
-	if logPath != "requests.log" {
-		t.Errorf("expected default log path 'requests.log', got %q", logPath)
+	if logPath != defaultLogPath {
+		t.Errorf("expected default log path %q, got %q", defaultLogPath, logPath)
 	}
 }
 
@@ -331,13 +328,27 @@ func TestLogFilePathDefault(t *testing.T) {
 func TestLogFilePathCustom(t *testing.T) {
 	t.Setenv("LOG_FILE", "/tmp/custom.log")
 
-	logPath := "requests.log"
-	if lf := os.Getenv("LOG_FILE"); lf != "" {
-		logPath = lf
-	}
+	logPath := resolveLogPath()
 
 	if logPath != "/tmp/custom.log" {
 		t.Errorf("expected log path '/tmp/custom.log', got %q", logPath)
+	}
+}
+
+func TestOpenLogFileCreatesParentDirectory(t *testing.T) {
+	logPath := filepath.Join(t.TempDir(), "logs", "requests.log")
+
+	logFile, err := openLogFile(logPath)
+	if err != nil {
+		t.Fatalf("expected openLogFile to create parent directory, got error: %v", err)
+	}
+	logFile.Close()
+
+	if _, err := os.Stat(filepath.Dir(logPath)); err != nil {
+		t.Fatalf("expected parent directory to exist, got error: %v", err)
+	}
+	if _, err := os.Stat(logPath); err != nil {
+		t.Fatalf("expected log file to exist, got error: %v", err)
 	}
 }
 
