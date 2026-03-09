@@ -57,6 +57,138 @@ func TestModelUpdateQuit(t *testing.T) {
 	}
 }
 
+func TestModelUpdateNavigation(t *testing.T) {
+	m := model{
+		requests: []RequestData{
+			{Method: "GET", URI: "/one"},
+			{Method: "POST", URI: "/two"},
+			{Method: "DELETE", URI: "/three"},
+		},
+		selectedIndex: 0,
+		expandedIndex: -1,
+	}
+
+	result, _ := m.Update(tea.KeyPressMsg{Code: 'j'})
+	updated := result.(model)
+	if updated.selectedIndex != 1 {
+		t.Fatalf("expected selection to move down to 1, got %d", updated.selectedIndex)
+	}
+
+	result, _ = updated.Update(tea.KeyPressMsg{Code: tea.KeyDown})
+	updated = result.(model)
+	if updated.selectedIndex != 2 {
+		t.Fatalf("expected selection to move down to 2 with arrow key, got %d", updated.selectedIndex)
+	}
+
+	result, _ = updated.Update(tea.KeyPressMsg{Code: tea.KeyUp})
+	updated = result.(model)
+	if updated.selectedIndex != 1 {
+		t.Fatalf("expected selection to move up to 1 with arrow key, got %d", updated.selectedIndex)
+	}
+
+	result, _ = updated.Update(tea.KeyPressMsg{Code: 'k'})
+	updated = result.(model)
+	if updated.selectedIndex != 0 {
+		t.Fatalf("expected selection to move up to 0 with k, got %d", updated.selectedIndex)
+	}
+}
+
+func TestModelUpdateNavigationBounds(t *testing.T) {
+	m := model{
+		requests:       []RequestData{{URI: "/one"}, {URI: "/two"}},
+		selectedIndex:  0,
+		expandedIndex:  -1,
+		scrollOffset:   0,
+	}
+
+	result, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyUp})
+	updated := result.(model)
+	if updated.selectedIndex != 0 {
+		t.Fatalf("expected selection to clamp at first row, got %d", updated.selectedIndex)
+	}
+
+	updated.selectedIndex = 1
+	result, _ = updated.Update(tea.KeyPressMsg{Code: tea.KeyDown})
+	updated = result.(model)
+	if updated.selectedIndex != 1 {
+		t.Fatalf("expected selection to clamp at last row, got %d", updated.selectedIndex)
+	}
+}
+
+func TestModelUpdateToggleExpand(t *testing.T) {
+	m := model{
+		requests:       []RequestData{{URI: "/one"}, {URI: "/two"}},
+		selectedIndex:  1,
+		expandedIndex:  -1,
+	}
+
+	result, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	updated := result.(model)
+	if updated.expandedIndex != 1 {
+		t.Fatalf("expected selected row to expand, got %d", updated.expandedIndex)
+	}
+	if updated.selectedIndex != 1 {
+		t.Fatalf("expected selection to stay on expanded row, got %d", updated.selectedIndex)
+	}
+
+	result, _ = updated.Update(tea.KeyPressMsg{Code: tea.KeySpace})
+	updated = result.(model)
+	if updated.expandedIndex != -1 {
+		t.Fatalf("expected expanded row to collapse, got %d", updated.expandedIndex)
+	}
+}
+
+func TestModelUpdateClearRequests(t *testing.T) {
+	m := model{
+		requests:       []RequestData{{URI: "/one"}, {URI: "/two"}},
+		selectedIndex:  1,
+		expandedIndex:  1,
+		scrollOffset:   3,
+	}
+
+	result, _ := m.Update(tea.KeyPressMsg{Code: 'c'})
+	updated := result.(model)
+
+	if len(updated.requests) != 0 {
+		t.Fatalf("expected requests to be cleared, got %d", len(updated.requests))
+	}
+	if updated.selectedIndex != 0 {
+		t.Fatalf("expected selectedIndex reset to 0, got %d", updated.selectedIndex)
+	}
+	if updated.expandedIndex != -1 {
+		t.Fatalf("expected expandedIndex reset to -1, got %d", updated.expandedIndex)
+	}
+	if updated.scrollOffset != 0 {
+		t.Fatalf("expected scrollOffset reset to 0, got %d", updated.scrollOffset)
+	}
+}
+
+func TestModelUpdateAppendPreservesSelection(t *testing.T) {
+	m := model{
+		reqCh:          make(chan RequestData),
+		requests:       []RequestData{{URI: "/one"}, {URI: "/two"}},
+		selectedIndex:  0,
+		expandedIndex:  1,
+		scrollOffset:   0,
+	}
+
+	result, cmd := m.Update(requestMsg(RequestData{URI: "/three"}))
+	updated := result.(model)
+
+	if len(updated.requests) != 3 {
+		t.Fatalf("expected appended request, got %d rows", len(updated.requests))
+	}
+	if updated.selectedIndex != 0 {
+		t.Fatalf("expected selection to stay on existing row, got %d", updated.selectedIndex)
+	}
+	if updated.expandedIndex != 1 {
+		t.Fatalf("expected expanded index to stay stable, got %d", updated.expandedIndex)
+	}
+	if cmd == nil {
+		t.Fatal("expected waitForRequest command after append")
+	}
+}
+
 func TestModelViewEmpty(t *testing.T) {
 	m := model{port: "8080", logPath: "requests.log"}
 	view := stripANSI(renderView(m))

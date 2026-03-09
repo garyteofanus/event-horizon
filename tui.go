@@ -21,12 +21,15 @@ func waitForRequest(ch <-chan RequestData) tea.Cmd {
 
 // model is the bubbletea TUI model for displaying live HTTP requests.
 type model struct {
-	reqCh    <-chan RequestData
-	requests []RequestData
-	port     string
-	logPath  string
-	width    int
-	height   int
+	reqCh          <-chan RequestData
+	requests       []RequestData
+	port           string
+	logPath        string
+	width          int
+	height         int
+	selectedIndex  int
+	expandedIndex  int
+	scrollOffset   int
 }
 
 func (m model) Init() tea.Cmd {
@@ -39,16 +42,97 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "j", "down":
+			if len(m.requests) == 0 {
+				return m, nil
+			}
+			m.selectedIndex = minInt(m.selectedIndex+1, len(m.requests)-1)
+			m.scrollOffset = clampScrollOffset(m.scrollOffset, len(m.requests))
+			return m, nil
+		case "k", "up":
+			if len(m.requests) == 0 {
+				return m, nil
+			}
+			m.selectedIndex = maxInt(m.selectedIndex-1, 0)
+			m.scrollOffset = clampScrollOffset(m.scrollOffset, len(m.requests))
+			return m, nil
+		case "enter", "space":
+			if len(m.requests) == 0 {
+				return m, nil
+			}
+			if m.expandedIndex == m.selectedIndex {
+				m.expandedIndex = -1
+			} else {
+				m.expandedIndex = m.selectedIndex
+			}
+			m.scrollOffset = clampScrollOffset(m.scrollOffset, len(m.requests))
+			return m, nil
+		case "x", "c":
+			m.requests = nil
+			m.selectedIndex = 0
+			m.expandedIndex = -1
+			m.scrollOffset = 0
+			return m, nil
 		}
 	case requestMsg:
 		m.requests = append(m.requests, RequestData(msg))
+		if len(m.requests) == 1 {
+			m.selectedIndex = 0
+		}
+		m.selectedIndex = clampIndex(m.selectedIndex, len(m.requests))
+		if m.expandedIndex >= len(m.requests) {
+			m.expandedIndex = -1
+		}
+		m.scrollOffset = clampScrollOffset(m.scrollOffset, len(m.requests))
 		return m, waitForRequest(m.reqCh)
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		m.selectedIndex = clampIndex(m.selectedIndex, len(m.requests))
+		if m.expandedIndex >= len(m.requests) {
+			m.expandedIndex = -1
+		}
+		m.scrollOffset = clampScrollOffset(m.scrollOffset, len(m.requests))
 		return m, nil
 	}
 	return m, nil
+}
+
+func clampIndex(index int, length int) int {
+	if length == 0 {
+		return 0
+	}
+	if index < 0 {
+		return 0
+	}
+	if index >= length {
+		return length - 1
+	}
+	return index
+}
+
+func clampScrollOffset(offset int, length int) int {
+	if length == 0 || offset < 0 {
+		return 0
+	}
+	if offset >= length {
+		return length - 1
+	}
+	return offset
+}
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func (m model) View() tea.View {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"time"
 )
@@ -16,6 +17,9 @@ type RequestData struct {
 	URI          string
 	Status       int
 	ResponseTime time.Duration
+	Headers      http.Header
+	Body         string
+	ClientIP     string
 }
 
 // handleRequest returns an http.HandlerFunc that logs every incoming request
@@ -39,6 +43,10 @@ func handleRequest(logger *slog.Logger, reqCh chan<- RequestData) http.HandlerFu
 		}
 
 		elapsed := time.Since(start)
+		clientIP := r.RemoteAddr
+		if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+			clientIP = host
+		}
 
 		logger.LogAttrs(context.Background(), slog.LevelInfo, "request",
 			slog.String("method", r.Method),
@@ -61,6 +69,9 @@ func handleRequest(logger *slog.Logger, reqCh chan<- RequestData) http.HandlerFu
 			URI:          r.RequestURI,
 			Status:       200,
 			ResponseTime: elapsed,
+			Headers:      r.Header.Clone(),
+			Body:         string(body),
+			ClientIP:     clientIP,
 		}:
 		default:
 		}
