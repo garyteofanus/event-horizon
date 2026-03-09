@@ -47,9 +47,10 @@ func main() {
 
 	// Run TUI on main goroutine
 	p := tea.NewProgram(model{
-		reqCh:   reqCh,
-		port:    port,
-		logPath: logPath,
+		reqCh:      reqCh,
+		port:       port,
+		logPath:    logPath,
+		formatBody: true,
 	})
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "TUI error: %v\n", err)

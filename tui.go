@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sort"
@@ -36,6 +38,7 @@ type model struct {
 	expandedIndex  int
 	scrollOffset   int
 	flashMessage   string
+	formatBody     bool
 }
 
 func (m model) Init() tea.Cmd {
@@ -91,6 +94,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.flashMessage = "Copied!"
 			return m, tea.Batch(tea.SetClipboard(r.Body), tickCmd)
+		case "f":
+			m.formatBody = !m.formatBody
+			return m, nil
 		case "C":
 			if len(m.requests) == 0 {
 				return m, nil
@@ -272,11 +278,19 @@ func renderRequestRow(r RequestData, rowIndex int, width int, selected bool) str
 	return row
 }
 
-func renderExpandedDetails(r RequestData, width int) string {
+func renderExpandedDetails(r RequestData, width int, formatBody bool) string {
 	innerWidth := maxInt(width-4, 20)
+
+	// Determine body content and label
+	body := blankFallback(r.Body)
+	label := bodyLabel(r.Body, formatBody)
+	if formatBody && isJSON(r.Body) {
+		body = prettyJSON(r.Body)
+	}
+
 	sections := []string{
 		renderDetailSection("Headers", formatHeaders(r.Headers), innerWidth),
-		renderDetailSection("Body", blankFallback(r.Body), innerWidth),
+		renderDetailSection(label, body, innerWidth),
 		renderDetailSection("Client IP", blankFallback(r.ClientIP), innerWidth),
 		renderDetailSection("Response Time", formatResponseTime(r.ResponseTime), innerWidth),
 	}
@@ -337,11 +351,30 @@ func blankFallback(value string) string {
 	return value
 }
 
+func isJSON(s string) bool {
+	return len(strings.TrimSpace(s)) > 0 && json.Valid([]byte(s))
+}
+
+func prettyJSON(s string) string {
+	var buf bytes.Buffer
+	if err := json.Indent(&buf, []byte(s), "", "  "); err != nil {
+		return s
+	}
+	return buf.String()
+}
+
+func bodyLabel(body string, formatOn bool) string {
+	if formatOn && isJSON(body) {
+		return "Body (JSON)"
+	}
+	return "Body (raw)"
+}
+
 func renderRequestBlock(r RequestData, index int, m model, width int) string {
 	selected := len(m.requests) > 0 && index == m.selectedIndex
 	parts := []string{renderRequestRow(r, index, width, selected)}
 	if selected && m.expandedIndex == m.selectedIndex {
-		parts = append(parts, renderExpandedDetails(r, width))
+		parts = append(parts, renderExpandedDetails(r, width, m.formatBody))
 	}
 	return strings.Join(parts, "\n")
 }
@@ -410,11 +443,15 @@ func renderFooter(m model) string {
 		selected = clampIndex(m.selectedIndex, len(m.requests)) + 1
 	}
 
-	status := fmt.Sprintf("%d requests | selected %d/%d", len(m.requests), selected, len(m.requests))
+	formatState := "format: on"
+	if !m.formatBody {
+		formatState = "format: off"
+	}
+	status := fmt.Sprintf("%d requests | selected %d/%d | %s", len(m.requests), selected, len(m.requests), formatState)
 	if m.flashMessage != "" {
 		status += " | " + m.flashMessage
 	}
-	help := "j/k or arrows move | enter/space expand | c copy | C copy all | x clear | q quit"
+	help := "j/k or arrows move | enter/space expand | c copy | C copy all | f format | x clear | q quit"
 	return footerStyle.Render(status) + "\n" + footerStyle.Render(help)
 }
 
