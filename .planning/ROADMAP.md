@@ -102,7 +102,10 @@ Plans:
   3. User can press a keybind to clear all visible log entries from the TUI (file log is unaffected)
   4. A footer displays available keybindings so the user does not need to memorize controls
   5. Resizing the terminal window re-renders the TUI correctly without crashing or corrupting the display
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 05-01-PLAN.md — Interactive navigation, expansion, clear, footer, resize handling
 
 ## Progress
 
@@ -117,7 +120,7 @@ Phases execute in numeric order: 3 -> 4 -> 5
 | 4. Compact List with Styles | v1.1 | 1/1 | Complete | 2026-03-06 |
 | 5. Interactive Features and Polish | v1.1 | 0/? | Not started | - |
 | 6. Copy & Format | v1.1 | 0/2 | Not started | - |
-| 7. Retroactive Verification & Cleanup | v1.1 | 0/? | Not started | - |
+| 7. Retroactive Verification & Cleanup | v1.1 | 0/2 | Not started | - |
 
 ### Phase 6: Copy request body and format body in expanded view
 
@@ -149,4 +152,8 @@ Plans:
   3. REQUIREMENTS.md contains all Phase 6 requirement IDs (COPY-01–05, FMT-01–04, KEY-01–02) in both the requirements list and traceability table
   4. All implemented v1.1 requirement checkboxes are marked `[x]`
   5. formatRequestLine dead code is removed from handler.go
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Retroactive VERIFICATION.md for phases 3, 4, 5 and Phase 5 SUMMARY.md
+- [ ] 07-02-PLAN.md — Dead code removal (formatRequestLine)
