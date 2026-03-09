@@ -116,3 +116,22 @@ Phases execute in numeric order: 3 -> 4 -> 5
 | 3. TUI Scaffolding and HTTP Bridge | v1.1 | 2/2 | Complete | 2026-03-06 |
 | 4. Compact List with Styles | v1.1 | 1/1 | Complete | 2026-03-06 |
 | 5. Interactive Features and Polish | v1.1 | 0/? | Not started | - |
+
+### Phase 6: Copy request body and format body in expanded view
+
+**Goal:** Add clipboard copy for request body/full request and JSON pretty-printing with syntax highlighting in the expanded detail view
+**Requirements**: COPY-01, COPY-02, COPY-03, COPY-04, COPY-05, FMT-01, FMT-02, FMT-03, FMT-04, KEY-01, KEY-02
+**Depends on:** Phase 5
+**Success Criteria** (what must be TRUE):
+  1. User can press c to copy the selected request's body to clipboard, with "Copied!" flash feedback
+  2. User can press Shift+C to copy the full request (headers, body, client IP, response time) to clipboard
+  3. Empty body shows "No body to copy" flash; flash auto-dismisses after ~2 seconds
+  4. JSON bodies are auto-detected and displayed formatted with syntax highlighting by default
+  5. User can press f to toggle between formatted and raw body display
+  6. Body section label shows "(JSON)" or "(raw)" based on content and toggle state
+  7. Clear is remapped to x only; c is now copy
+**Plans:** 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Clipboard copy with flash messages and keybinding remap
+- [ ] 06-02-PLAN.md — JSON formatting, syntax highlighting, and format toggle
