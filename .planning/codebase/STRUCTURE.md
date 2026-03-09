@@ -5,7 +5,7 @@
 ## Directory Layout
 
 ```
-blackhole-server/
+event-horizon/
 ├── .claude/                # Claude Code local settings
 │   └── settings.local.json
 ├── .planning/              # GSD planning documents
@@ -39,7 +39,7 @@ blackhole-server/
 - `main.go`: Sole entry point -- contains `func main()` and the HTTP handler
 
 **Configuration:**
-- `go.mod`: Go module definition (module name: `blackhole-server`, Go 1.25.0)
+- `go.mod`: Go module definition (module name: `event-horizon`, Go 1.25.0)
 - `CLAUDE.md`: Project instructions for Claude Code
 
 **Core Logic:**

@@ -55,7 +55,7 @@
 ## Recommended Project Structure
 
 ```
-blackhole-server/
+event-horizon/
 ├── main.go              # Orchestration: channel, HTTP goroutine, TUI run
 ├── handler.go           # handleRequest() + RequestEntry type
 ├── tui.go               # Model, Update, View, message types
@@ -431,5 +431,5 @@ Each step produces a working program that can be tested independently:
 - [Bubbles v2 list package docs](https://pkg.go.dev/charm.land/bubbles/v2/list) -- HIGH confidence
 
 ---
-*Architecture research for: TUI log viewer integration with blackhole-server*
+*Architecture research for: TUI log viewer integration with event-horizon*
 *Researched: 2026-03-06*

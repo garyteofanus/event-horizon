@@ -31,7 +31,7 @@ go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out  # 
 
 **Structure:**
 ```
-blackhole-server/
+event-horizon/
 ├── main.go
 └── main_test.go        # Does not exist yet -- needs to be created
 ```

@@ -1,6 +1,6 @@
 # Stack Research
 
-**Domain:** TUI Log Viewer (additions to existing Go HTTP blackhole server)
+**Domain:** TUI Log Viewer (additions to existing Go HTTP event-horizon server)
 **Researched:** 2026-03-06
 **Confidence:** HIGH
 

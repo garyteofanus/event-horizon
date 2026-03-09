@@ -1,6 +1,6 @@
 # Pitfalls Research
 
-**Domain:** Adding bubbletea v2 TUI to existing Go HTTP blackhole server
+**Domain:** Adding bubbletea v2 TUI to existing Go HTTP event-horizon server
 **Researched:** 2026-03-06
 **Confidence:** HIGH
 
@@ -304,5 +304,5 @@ Phase 1 (handler rewrite) -- fix before exposing to any traffic.
 - [Charm v2 blog post](https://charm.land/blog/v2/) - Official v2 announcement
 
 ---
-*Pitfalls research for: bubbletea v2 TUI integration with Go HTTP blackhole server*
+*Pitfalls research for: bubbletea v2 TUI integration with Go HTTP event-horizon server*
 *Researched: 2026-03-06*

@@ -53,13 +53,13 @@
 - No `.env` file present; configuration is purely via environment variables
 
 **Build:**
-- `go.mod` - Module definition (`blackhole-server`)
+- `go.mod` - Module definition (`event-horizon`)
 - No build configuration files (Makefile, Dockerfile, etc.)
 
 **Build commands:**
 ```bash
 go run main.go          # Run directly
-go build -o blackhole-server . # Compile binary
+go build -o event-horizon . # Compile binary
 ```
 
 ## Platform Requirements

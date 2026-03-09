@@ -4,7 +4,7 @@
 
 ## APIs & External Services
 
-None. This is a self-contained blackhole server with no outbound API calls.
+None. This is a self-contained event-horizon server with no outbound API calls.
 
 ## Data Storage
 

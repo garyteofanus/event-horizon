@@ -1,13 +1,13 @@
 # Project Research Summary
 
-**Project:** blackhole-server v1.1 — TUI Log Viewer
+**Project:** event-horizon v1.1 — TUI Log Viewer
 **Domain:** TUI integration with existing Go HTTP server
 **Researched:** 2026-03-06
 **Confidence:** HIGH
 
 ## Executive Summary
 
-This project adds a real-time TUI request inspector to an existing Go HTTP blackhole server using the Charm ecosystem (Bubble Tea v2, Lip Gloss v2, Bubbles v2). The domain is well-understood: streaming log viewers with expand/collapse detail are a solved pattern in the Go TUI space, with logtui and lazyjournal as close analogs. The Charm v2 ecosystem, released February 2026, is the only viable choice for interactive Go TUIs and provides all needed primitives (viewport scrolling, styled rendering, keyboard handling) out of the box.
+This project adds a real-time TUI request inspector to an existing Go HTTP event-horizon server using the Charm ecosystem (Bubble Tea v2, Lip Gloss v2, Bubbles v2). The domain is well-understood: streaming log viewers with expand/collapse detail are a solved pattern in the Go TUI space, with logtui and lazyjournal as close analogs. The Charm v2 ecosystem, released February 2026, is the only viable choice for interactive Go TUIs and provides all needed primitives (viewport scrolling, styled rendering, keyboard handling) out of the box.
 
 The recommended approach is a channel-bridged architecture: the HTTP server runs in a background goroutine, sends structured request data through a buffered Go channel, and a Bubble Tea program on the main goroutine consumes it via blocking `tea.Cmd` functions. This keeps the Elm architecture intact, avoids race conditions, and cleanly separates HTTP concerns from TUI concerns. The existing slog file logger continues unchanged; only stdout is redirected away from slog to give the TUI exclusive terminal ownership.
 

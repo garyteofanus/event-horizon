@@ -34,13 +34,13 @@ Every request that hits the server is reliably captured and logged in structured
 
 ### Active
 
-- [ ] Live TUI dashboard using bubbletea v2
+- [x] Live TUI dashboard using bubbletea v2
 - [ ] Compact one-line view per request: method, path, status code
 - [ ] Expand/collapse individual request detail with keypress (headers, body, client IP, response time)
 - [ ] Color-coded output (methods, status codes, visual elements)
 - [ ] Clear all visible logs with keybind
 - [ ] Visual separation between log entries
-- [ ] JSON log file continues working alongside TUI
+- [x] JSON log file continues working alongside TUI
 
 ### Out of Scope
 
@@ -55,7 +55,7 @@ Every request that hits the server is reliably captured and logged in structured
 ## Context
 
 - Brownfield: existing single-file Go server (`main.go`) with slog-based structured JSON logging
-- v1.0 shipped: slog migration, dual output (stdout + file), renamed to blackhole-server
+- v1.0 shipped: slog migration, dual output (stdout + file), renamed to event-horizon
 - Go 1.25.0, Go modules
 - Adding Charm ecosystem (bubbletea v2, lipgloss) as first external dependencies
 - `bubbletea v2` is at `charm.land/bubbletea/v2`
@@ -73,9 +73,9 @@ Every request that hits the server is reliably captured and logged in structured
 | Use `slog` for logging | Standard library, structured JSON out of the box | ✓ Good |
 | Empty 200 OK response | Server is for logging/inspection, not echoing | ✓ Good |
 | Dual output (stdout + file) | Stdout for dev/container use, file for persistence | ✓ Good |
-| Allow external deps (Charm) | TUI requires bubbletea; stdlib has no TUI support | — Pending |
-| bubbletea v2 | Latest version, active development | — Pending |
+| Allow external deps (Charm) | TUI requires bubbletea; stdlib has no TUI support | ✓ Good |
+| bubbletea v2 | Latest version, active development | ✓ Good |
 | Compact + expand UI pattern | Minimal by default, detail on demand | — Pending |
 
 ---
-*Last updated: 2026-03-06 after v1.1 milestone start*
+*Last updated: 2026-03-06 after Phase 3 completion*

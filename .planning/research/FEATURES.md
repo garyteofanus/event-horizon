@@ -178,5 +178,5 @@ Features to defer until the TUI is proven and users are actively requesting them
 - [Bubbles component library](https://github.com/charmbracelet/bubbles) -- list, viewport, spinner components
 
 ---
-*Feature research for: TUI request inspector for blackhole-server v1.1*
+*Feature research for: TUI request inspector for event-horizon v1.1*
 *Researched: 2026-03-06*

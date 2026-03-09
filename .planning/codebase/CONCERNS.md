@@ -43,7 +43,7 @@ No confirmed bugs detected. The codebase is minimal and functional for its state
 **Request reflection enables header/body exfiltration:**
 - Risk: By design, the server echoes all request details (headers, body) back to the caller. If exposed publicly, any forwarded requests (e.g., from SSRF attacks) will have their full contents reflected, including `Authorization`, `Cookie`, and other sensitive headers.
 - Files: `main.go:54-62`
-- Current mitigation: None. This is inherent to the blackhole server design.
+- Current mitigation: None. This is inherent to the event-horizon server design.
 - Recommendations: If deployed beyond local development, add IP allowlisting or authentication. Consider redacting sensitive headers (`Authorization`, `Cookie`, `X-Api-Key`) from the echo response.
 
 **No request timeout configuration:**
